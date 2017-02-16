@@ -1,0 +1,1131 @@
+\subsection{Problem Formulation}
+\label{subsection:model}
+
+% just say in this section we define the sets and parameters needed to define a vrptt
+
+
+
+\subsubsection{Instance Sets and Parameters}
+
+In this section we define the sets and parameters provided with the instances used in this thesis.\\
+% tuple
+
+% Let
+% % A VRPTT instance
+% % $(\mathcal L, \mathcal D, \mathcal F)$
+% % consists of a set
+% $\mathcal L $
+% of be a set of locations,
+% %
+% % \todo{FIXME, how do I use D in equations?? }
+% % $ \mathcal D := \mathcal L \times  \mathcal L \rightarrow  \mathbb{R}^0_+$ \\
+% let
+% $ \mathcal D : \mathcal L \times \mathcal L \rightarrow  \mathbb{R}^0_+$
+% be a mapping from a pair of locations to the distance between them
+%  and let
+% $\mathcal F$
+% be a set of vehicles.
+% \\
+
+% location
+Let
+$\mathcal L $
+of be a set of locations and let
+let
+$ \mathcal D : \mathcal L \times \mathcal L \rightarrow  \mathbb{R}^0_+$
+be a mapping from a pair of locations to the distance between them.
+Let
+$\mathcal L^{\rm types} =  \{ {\rm \text{depot}}, {\rm \text{lorry customer}}, $ $ {\rm \text{trailer customer}}, {\rm \text{pure transshipment location}} \} $
+be a set of location types.
+Each location
+$i \in \mathcal L$
+has a location type
+$locationType_i \in \mathcal L^{\rm types}$,
+a start of its time window
+$\alpha_i \in \mathbb{R}^0_+$
+% $\tau^{\rm location-start}_i \in \mathbb{R}^0_+$
+and an end of its time window
+$\beta_i \in \mathbb{R}_+$.
+\\
+
+Each customer location
+$i \in \mathcal L^{\rm customer} :=
+\{ j \in \mathcal L: locationType_j \in \{ {\rm \text{lorry customer}}, $ $  {\rm  \text{trailer customer}} \} \} $
+has a supply
+$locationSupply_i \in \mathbb{R}_+$
+that needs to be collected.
+\\
+
+% vehicles
+Let
+$\mathcal F$
+be a set of vehicles.
+Let
+$\mathcal F^{\rm types} = \{ {\rm \text{lorry}}, {\rm \text{trailer}} \} $
+be a set of vehicle types.
+Let
+$\mathcal F^{\rm axle-types} = \{ {\rm {2-axles}}, {\rm {3-axles}} \} $
+be a set of axles types of vehicles.
+Each vehicle
+$i \in \mathcal F$
+has a vehicle type
+$f^{\rm type}_i \in \mathcal F^{\rm types}$,
+a capacity
+$f^{\rm capacity}_i \in \mathbb{R}_+$,
+a fixed cost
+$f^{\rm fixed}_i \in \mathbb{R}^0_+$,
+a variable distance cost
+$f^{\rm distance}_i \in \mathbb{R}^0_+$ ,
+a variable time cost
+$f^{\rm time}_i \in \mathbb{R}^0_+$,
+an amount of axles
+$f^{\rm axle-type}_i \in \mathcal F^{\rm axle-types}$,
+a maximum speed
+$f^{\rm speed}_i \in \mathbb{R}_+$,
+that is used on distances longer than $\phi$ distance units,
+a slower speed
+$f^{\rm shortspeed}_i \in \mathbb{R}_+$
+that is used on distances shorter than or equal to $\phi$ distance units.
+\\
+
+% lorry
+Each lorry
+$i \in \mathcal F^{\rm lorry} :=
+\{j \in \mathcal F: f^{\rm type}_j = \rm lorry\}$
+has a load transfer speed
+$f^{\rm loadspeed}_i \in \mathbb{R}_+$
+which is expressed in terms of time per unit.
+\\
+
+
+
+
+The time that it takes to decouple or couple a trailer at the depot is $\tau^D$ time units.
+The time that it takes to decouple or couple a trailer at a transshipment location is $\tau^R$ time units.
+Let $ \tau^{\rm min}$ and $\tau^{\rm max}$ be the start and end respectively of the instance's time horizon.\\
+
+
+%\todo{I have thought about putting $\eta$, which is described in the next paragraph, here as well, but the above three parameters are problem parameters, while $\eta$ is purely an implementation parameter. Should I keep this separated as it is now?}
+
+
+
+\subsubsection{Model Sets and Parameters}
+
+In this section we define extra sets and parameters to be able to construct the model.\\
+
+
+%transshipment vertices
+Transshipments consist of two activities, namely uncoupling and coupling trailers.
+Let
+$ R^- $ and $R^+$
+be the sets of transshipment decouple and couple vertices respectively.
+Each transshipment location
+$j \in \mathcal L^{\rm transshipment} :=
+\{ i \in \mathcal L: locationType_i \in  \{ {\rm \text{pure transshipment location}}, $ $  {\rm \text{trailer customer}} \} \} $
+has decouple vertices
+$ r^{j,-}_m \in  R^-, m \in \{ 1,\ldots,\eta \}  $
+and  couple vertices
+$ r^{j,+}_m \in R^+, m \in \{ 1,\ldots,\eta \}   $
+% which together constitute transshipment pairs
+% $  (r^{j,-}_m,r^{j,+}_m) , \  m \in \{ 1,\ldots,\eta \}  $
+where $\eta$ is the maximum number of transshipments that can take place at a transshipment location.
+ Let
+ $\mathcal E^{\rm pairs} = \{  (r^{j,-}_m,r^{j,+}_m ) : r^{j,-}_m \in \mathcal R^- , r^{j,+}_m \in \mathcal R^+, m \in \{ 1,\ldots, \eta \},  j \in \mathcal L^{\rm transshipment}   \}$
+ be the set of transshipment vertex pairs, alternatively interpreted as the set of edges from each transshipment decouple vertex to its couple vertex. \\
+
+ %  pair of vertices
+ % be the set of edges between all the decouple and couple vertex pairs of transshipment locations.
+
+%Supply Collection Vertices
+Let $S$ be the set of supply collection vertices.
+Each customer location
+$i \in \mathcal L^{\rm customer} $
+has a supply collection vertex
+$s_{i} \in S$
+that is used to collect the supply of the customer.
+let
+$S^{\rm trailer} := \{ s_i \in S: locationType_i = \text{trailer customer} \}$
+be the set of all supply collection vertices located at trailer customers and
+$S^{\rm lorry} := \{ s_i \in S: locationType_i = \text{lorry customer} \}$
+be the set of all supply collection vertices located at lorry customers.
+\\
+
+%Lorry Vertices}
+Let $M^{+} $ and $M^{-} $ be the set of all lorry start and end vertices respectively.
+At the depot each lorry
+$k \in \mathcal F^{\rm lorry} $
+has a start vertex
+$m^+_k \in M^{+} $
+that starts its path and an end vertex
+$m^-_k \in M^{-} $
+that ends its path and unloads the lorry.\\
+
+%Trailer Vertices}
+
+Let $N^{+} $ and $N^{-} $ be the set of all trailer start and end vertices respectively.
+At the depot each trailer
+$l \in \mathcal F^{\rm trailer} :=
+\{k \in \mathcal F: f^{\rm type}_k = \rm trailer\} $
+has a start vertex
+$n^+_l \in N^{+} $
+that is used to couple the trailer to a lorry, and an end vertex
+$n^-_l \in N^{-} $
+that decouples the trailer from the lorry. When the trailer is decoupled it is unloaded.\\
+
+
+For each vertex
+$v \in V := M^{+} \cup M^{-} \cup N^{+} \cup N^{-} \cup  R^- \cup R^+ \cup S $ ,
+let $v^{\rm loc}$
+be the location that the vertex belongs to,
+$\tau^{\rm start}_v = \alpha_{v^{\rm loc}}$
+be the start time of the vertex's time window,
+$\tau^{\rm end}_v = \beta_{v^{\rm loc}}$
+be the closing time of the vertex's time window.
+\\
+%
+%
+% Let the latest closing time of any time window be denoted as
+% $ \tau^{\rm max} = \max_{v \in V}\tau^{\rm end}_v$
+% and the earliest start time as
+% $ \tau^{\rm min} = \min_{v \in V}\tau^{\rm start}_v$
+% . \\
+
+
+Let the duration of a vertex visit be denoted as
+\begin{align}
+  \tau^{\rm visit}_{v,k} =
+  \begin{cases}
+    % 0      , & \text{ for }   v \in S             \\
+    0      , & \text{ if }   v \in M^- \cup M^+,  \\
+    \tau^D , & \text{ if }   v \in N^- \cup N^+,  \\
+    \tau^R , & \text{ if }   v \in R^- \cup R^+, \\
+    f_k^{\rm loadspeed} \cdot locationSupply_{v^{\rm loc}},
+     & \text{ if }   v \in S ,
+  \end{cases}
+  \quad v \in V,
+  \ k \in \mathcal F^{\rm lorry}.
+\end{align}
+
+Let
+$\delta_{u,v} = \mathcal D(u^{\rm loc},v^{\rm loc}) , \ u,v \in \mathcal V$
+be the distance between two vertices $u$ and $v$. \\
+% Let the set of vertices distanced less than $\phi$ from vertex $i \in V$ be denoted as
+% $ \varepsilon^\phi_i $. \\
+
+
+Let the travel time between vertices $u,v \in V$ by vehicle $k \in \mathcal F$  be denoted as
+\begin{align}
+  \tau^{\rm travel}_{u,v,k} =
+  \begin{cases}
+    \delta_{u,v} / f_l^{\rm shortspeed} ,
+    & \text{ if }   \delta_{u,v} \leq \phi,  \\
+    \delta_{u,v} / f_l^{\rm speed} ,
+    & \text{  otherwise},
+  \end{cases}
+  \quad u,v \in V,
+  \ k \in \mathcal F.
+\end{align}
+
+
+% f_k^{\rm loadspeed} \cdot locationSupply_{i^{\rm loc}} + \delta_{i,j} / f_l^{\rm shortspeed}
+
+
+Let
+$
+  \tau^{\rm extra }_{u,v,k,l} =
+  \max(0, \tau_{u,v,l}^{\rm travel} - \tau_{u,v,k}^{\rm travel} ),
+\ k \in \mathcal{F}^{\rm lorry},
+\ (u,v) \in \mathcal E,
+\  l \in \mathcal{F}^{\rm trailer}$
+be the amount of extra time it takes for lorry
+$k $
+to traverse edge
+$(u,v)$
+if the lorry is coupled to trailer
+$l $. \\
+
+
+
+
+
+\subsubsection{Decision Variables}
+
+
+Events are the terms in which the transport plan is formulated.
+All possible events can be represented using the just defined vertices. \\
+
+A transport plan consist of paths, the assignment of vehicles to those paths, the time table and the load table of those paths, all of which will be defined.
+Solving the VRPTT yields such a transport plan.\\
+
+The VRPTT is described with a mixed-integer linear problem over the graph
+$G=(V,E)$
+where the set of edges consist of a subset of all possible edges between the vertices
+$ E = \{ (u,v): u,v \in V , u \neq v \} $. \\
+
+%%%%%%%%%%% path and x     %%%%%%%%%%%5
+From now on the path
+% $PATH(k)$
+of lorry
+$k \in \mathcal F^{\rm lorry}$
+means a simple path in $G$ from the lorry's start vertex $m^+_k$ to its end $m^-_k$. \\
+
+We model a lorry's path using the binary variable
+\begin{align}
+  x^{k}_{u,v} =  \begin{cases}
+  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in  E$}, \\
+  0,              & \text{otherwise. }
+  \end{cases}
+\end{align}
+
+
+%%%%%%%%% trailer movement %%%%%%%%%%%%%%%%%%%%
+
+We model the movements of trailers by using the binary variable
+$y^{k,l}_{u,v} $, where
+\begin{align}
+  y^{k,l}_{u,v} =  \begin{cases}
+  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ is coupled to trailer $l \in \mathcal F^{\rm trailer} $ whilst traversing edge $(u,v) \in E$ }, \\
+  0,              & \text{otherwise. }
+  \end{cases}
+\end{align}
+
+% Note that with the decision variables $x^{k}_{u,v} $  and $ y^{k,l}_{u,v}$ not only the paths of the transport plan are expressed, but also which vehicles are assigned to those paths. \\
+
+%%%%%%%%% time table%%%%%%%
+The time table contains information about the point in time at which a vertex is reached by a lorry.
+We model the time table with the variable $t^k_{u,v}$, where
+
+
+\begin{align}
+  t^k_{u,v} =
+  \begin{cases}
+    a ,       & \text{if a lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in E$ and arrives at $j$ at time $a \in \mathbb{R}^0_+$}, \\
+    0,        & \text{otherwise. }
+  \end{cases}
+\end{align}
+
+
+%%%%%%%%%%%% laod table %%%%%%%%%%%%%%%5
+The load table contains information about the load with which a vehicle traverses an edge.
+We model the load table with the variable $z^k_{u,v}$, where
+
+\begin{align}
+  z^k_{u,v} =
+  \begin{cases}
+    a ,       & \text{if a vehicle $k \in \mathcal F$ traverses edge $(u,v) \in  E $ with load $a \in \mathbb{R}^0_+ $}, \\
+    0,        & \text{otherwise. }
+  \end{cases}
+\end{align}
+
+
+% The vehicles' paths are denoted as path assignment $(X,Y)$, where
+% A solution to the VRPTT consists of the lorries' paths,
+Let $ X = (x^k_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$
+be the lorries' paths ,
+let
+$ Y = (y^{k,l}_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry} ,
+\l  \in  \mathcal F^{\rm trailer}, u,v \in \mathcal V$
+be the trailers' paths,
+let
+$ T = (t^k_{u,v}) $ for $ k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$
+be the time table and let
+$ L = (z^k_{u,v}) $ for $ k \in  \mathcal F, u,v \in \mathcal V$
+be the load table.
+A solution to the VRPTT can then be expressed with the tuple $(X,Y,L,T)$.
+Let from now on a solution's path assignment refer to
+% the vehicles' paths
+$(X,Y)$.\\
+
+%
+% and the load table as
+%
+% $l \in  \mathcal F^{\rm trailer}, u,v \in \mathcal V $,
+% the time table of the lorries on those paths,
+% $ T = (t^k_{u,v}) $ for $ k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$ and the load tables of the vehicles on those paths,
+% $ L = (z^k_{u,v}) $ for $ k \in  \mathcal F, u,v \in \mathcal V$.
+% For the sake of simplicity from now on the vehicle paths and the vehicle assignments are referred to as the path assignment
+% $XY := (X,Y)$.
+% A solution to the VRPTT can then be denoted with the tuple $(X,Y,L,T)$, where
+% $ X = (x^k_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$,
+% $ Y = (y^{k,l}_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry},
+%
+% .    \\
+
+
+\subsubsection{Lorry Constraints}
+
+
+%vertex on one path%%%%%%%%%%%%%%%%%%%
+A vertex can be on one path at the most,
+\begin{align}
+\label{con:first}
+ \sum_{v \in V}
+ \sum_{k \in \mathcal F^{\rm lorry}}
+ x^k_{u,v} \leq 1, \quad  u \in  V  .
+\end{align}
+
+%%%%%% on flow. Either in and out. only begin and end of lorry -1,+1%%%%%%%%%%%%
+A vertex can either  be the start of a lorry's path and have no predecessor,    be the end of a lorry's path and have no successor,  have both a predecessor and a successor or have neither.
+Hence,
+\begin{align}
+  \sum_{u \in  V }
+  \left( x^k_{u,v} -  x^k_{v,u} \right) =
+  \begin{cases}
+    -1,  & \ \text{ if } v = m^+_k, \\
+    1, & \ \text{ if } v = m^-_k, \\
+    0,  & \text{otherwise,}
+  \end{cases} \\
+  \quad v \in  V , \ k \in \mathcal F^{\rm lorry}. \notag
+\end{align}
+
+%%%%%% each supply collection v visited %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Every supply collection vertex
+% $i \in S$
+is visited by a lorry,
+\begin{align}
+  \label{con:customer_served}
+   \sum_{u \in V}
+   \sum_{v \in S}
+   \sum_{k \in \mathcal F^{\rm lorry}}
+x^k_{u,v} \geq |S| .
+\end{align}
+\\
+
+\subsubsection{Trailer Constraints}
+
+%%%%%%%%%%% sync of movement between lorry and trailer%%%%%%%%%%%%
+A trailer can only traverse an edge that is traversed by a lorry.
+A lorry can pull at most one trailer at a time,
+\begin{align}
+  \sum_{l \in \mathcal F^{\rm trailer}} y^{k,l}_{u,v} - x_{u,v}^k \leq 0, \quad u,v \in V, k \in \mathcal{F}^{\rm lorry}.
+\end{align}
+
+% The only vertices a lorry can depart from whilst coupled to a trailer are the trailer coupling vertices and the supply collection vertices of trailer customers.
+% The only vertices a lorry can arrive at whilst coupled to a trailer are the trailer decoupling vertices and the supply collection vertices of trailer customers,
+% \begin{align}
+%   \label{eq:lorrycustomer}
+%    y^{k,l}_{i,j}  = 0 ,  \\
+%    (i,j) \in \
+%     & \{ (u,v): u \in  V \setminus \{ N^+ \cup R^+ \cup S^{\rm trailer}   \}, v \in V  \}  \cup \notag \\
+%     & \{ (u,v): u \in V,  v \in  V \setminus \{ N^- \cup R^- \cup S^{\rm trailer}   \}   \}, \notag\\
+%     k \in \ & \mathcal F^{\rm lorry}, \notag \\
+%     l \in \ & \mathcal F^{\rm trailer}. \notag
+% \end{align}
+
+
+No lorry customers can be visited with a trailer,
+\begin{align}
+  \label{eq:lorrycustomer}
+  \sum_{u \in V }
+  \sum_{v \in S^{\rm lorry} }
+  \sum_{k \in \mathcal F^{\rm lorry} }
+  \sum_{l \in \mathcal F^{\rm trailer} }
+   y^{k,l}_{u,v}  \leq 0 .
+\end{align}
+
+
+A lorry can not arrive at a couple vertex whilst coupled to a trailer,
+\begin{align}
+  \sum_{u \in V }
+  \sum_{v \in N^+ \cup R^+ }
+  \sum_{k \in \mathcal F^{\rm lorry} }
+  \sum_{l \in \mathcal F^{\rm trailer} }
+   y^{k,l}_{u,v}  \leq 0 .
+\end{align}
+
+A lorry can not leave  a decouple vertex without being coupled to a trailer,
+\begin{align}
+  \sum_{u \in N^- \cup R^- }
+  \sum_{v \in V }
+  \sum_{k \in \mathcal F^{\rm lorry} }
+  \sum_{l \in \mathcal F^{\rm trailer} }
+   y^{k,l}_{u,v}  \leq 0 .
+\end{align}
+
+
+The vertices a lorry can only depart from whilst coupled to a trailer are the trailer coupling vertices.
+The vertices a lorry can only arrive at whilst coupled to a trailer are the trailer decoupling vertices,
+\begin{align}
+   \sum_{l \in \mathcal F^{\rm trailer}}
+   y^{k,l}_{u,v}  - x^k_{u,v} = 0 ,  \\
+   (u,v) \in \
+    &  \{ (u',v'): u' \in  \{  N^+ \cup R^+  \}   , v' \in V   \}
+   \cup \notag \\
+    & \{  (u',v'): u' \in V,  v' \in \{ N^- \cup R^-  \} \}, \notag\\
+     k  \in \ &   \mathcal F^{\rm lorry}. \notag
+\end{align}
+
+
+
+
+
+A lorry departs from a trailer customer's supply collection vertex with a trailer if and only if it also arrived with that trailer,
+\begin{align}
+   \sum_{u \in V}
+   \left(  y^{k,l}_{u,v} - y^{k,l}_{v,u}  \right) =
+   0,  \quad  v \in  S^{\rm trailer},
+   \ k \in \mathcal F^{\rm lorry},
+   \ l \in \mathcal F^{\rm trailer} .
+\end{align}
+
+
+% trailer start and end, correct trailer
+Each trailer can only be coupled and decoupled at the depot at the start and end vertex designated to the trailer,
+\begin{align}
+     y^{k,l}_{u,w}  = y^{k,l}_{w,v}  =   0, \quad
+     u \in N^+ \setminus \{ n^+_l \}, \ v \in N^- \setminus \{ n^-_l \} , \\
+     w \in V,
+     k \in \mathcal F^{\rm lorry},
+     l \in \mathcal F^{\rm trailer}. \notag
+\end{align}
+
+
+% trailer going into tl- is same trailer as going out tl+
+Each transshipment couple vertex is paired with a decouple vertex.
+A trailer departs from a transshipment location's couple vertex if and only if it also arrives at the decouple vertex that is paired with the couple vertex,
+\begin{align}
+     \sum_{w \in V}  \sum_{k \in \mathcal F^{\rm lorry} }
+     \left( y^{k,l}_{w,u}  - y^{k,l}_{v,w} \right) = 0 , \quad
+     l \in \  \mathcal F^{\rm trailer},
+      (u,v) \in \ \mathcal E^{\rm pairs}
+      % (j,m) \in \
+    %   \{ (r^{i,-}_m,r^{i,+}_m) : \ i \in \mathcal L^{\rm transshipment},
+    %  \ m \in \{ 1,\ldots,\eta \} \}.
+    %  \notag
+\end{align}
+
+
+
+
+ A lorry with three axles can not be coupled to a trailer with three axles,
+ \begin{align}
+   \label{eq:vehicle-compatibility}
+   y^{k,l}_{u,v} = \ & 0, \quad u,v \in V ,\\
+   k \in \ & \{ k' \in \mathcal{F}^{\rm lorry} : f^{\rm axle-type}_{k'} = {\rm 3-axles} \} , \notag \\
+  \ l \in \  & \{ l' \in \mathcal{F}^{\rm trailer} : f^{\rm axle-type}_{l'} = {\rm 3-axles} \} \notag  .
+ \end{align}
+
+
+% this was vehicle flow constriaints
+
+
+
+
+\subsubsection{Load Constraints}
+
+
+
+The load of a lorry on an edge can not exceeds the lorry's capacity.
+If a lorry does not traverse an edge, the load of the lorry on that edge is zero,
+\begin{align}
+  z_{u,v}^k  - x^{k}_{u,v}  f_k^{\rm capacity}  \leq 0, \quad
+  u,v \in V,
+  \ k \in \mathcal F^{\rm lorry}.
+\end{align}
+
+
+
+The load of a trailer on an edge can not exceeds the trailer's capacity. If a trailer does not traverse an edge, the load of that trailer on that edge is zero.
+\begin{align}
+  z_{u,v}^l  - f_l^{\rm capacity}  \sum_{ k \in \mathcal F^{\rm lorry} } y^{k,l}_{u,v}   \leq 0, \quad
+  u,v \in V,
+  \ l \in \mathcal F^{\rm trailer}.
+\end{align}
+
+
+
+%sum load at customer vertices
+No supply is left at the customer, hence
+whilst visiting a customer's supply collection vertex, the sum of the load of the collecting vehicles is increased with at least the amount of supply that the customer has,
+\begin{align}
+  \label{eq:supply}
+  % locationSupply_m +
+  \sum_{v \in V}
+  \sum_{ k \in \mathcal F }
+  \left(
+    z^k_{s_j,v}
+  -
+    z^k_{v,s_j}
+  \right)
+    \geq locationSupply_j, \quad
+    j \in \mathcal L^{\rm customer}.
+\end{align}
+
+
+
+
+
+
+On vertices other than the supply collection vertices, the load of a lorry can stay the same, or decrease in case some of the load is tranfered to a trailer,
+\begin{align}
+  \sum_{u \in V} \left( z^k_{u,v} - z^k_{v,u} \right)  \leq 0, \quad
+  v \in V \setminus S,
+  \ k \in \mathcal F^{\rm lorry}.
+\end{align}
+
+
+On a supply collection vertex, the load of a lorry can not increase more than the supply of the customer,
+\begin{align}
+  \sum_{v \in V} \left( z^k_{v,s_j} - z^k_{s_j,v} \right)  \leq locationSupply_j, \quad
+  j \in \mathcal L^{\rm customer},
+  \ k \in \mathcal F^{\rm lorry}.
+\end{align}
+
+Each decouple and couple transshipment vertex pair has, if used, two lorry loads and a trailer load incoming and outgoing.
+The sum of the incoming loads of such a vertex pair is equal to the sum of the  outgoing loads,
+\begin{align}
+  \sum_{w \in V}
+  \sum_{k \in \mathcal F}
+  \left(
+  z^k_{w,u} -  z^k_{u,w}  + z^k_{w,v} - z^k_{v,w}
+  \right)
+  = 0,  \quad
+  (u,v) \in \mathcal E^{\rm pairs}
+  % \{ (r^{u,-}_v,r^{u,+}_v) : \ u \in \mathcal L^{\rm transshipment}, \ v    \in \{ 1,\ldots,\eta \} \}.
+  %  \notag
+\end{align}
+
+
+
+
+
+The load of a lorry upon arrival at a trailer start vertex is equal to the load of the trailer and the lorry upon departure,
+\begin{align}
+  \sum_{u \in V} \sum_{k \in \mathcal F}
+  \left( z^k_{u,v} - z^k_{v,u} \right) = 0, \quad
+  v \in N^+.
+\end{align}
+
+
+
+
+
+
+A trailer can not be decoupled at the trailer's end vertex whilst being loaded more than its capacity,
+\begin{align}
+  \sum_{u \in V}
+  \sum_{k \in \mathcal F}
+  \left(
+  z^k_{u,v} - z^k_{v,u}
+  \right) \leq f_l^{\rm capacity} , \quad
+  v :=  n^-_l,
+   \ l \in \mathcal F^{\rm trailer}.
+\end{align}
+
+
+
+
+
+
+\subsubsection{Time Constraints}
+
+
+
+% Below is a suggestion on optional way to express (26). Unless lorry $k$ visits vertex $i$, the constraint just says $0 \leq 0$. If lorry $k$ visits vertex $i$, the left-hand side is the least time needed for lorry $k$ between entering vertex $i$ and entering the subsequent vertex, whichever the subsequent vertex is. Similarly, the right-hand side is the actual time between lorry $k$'s entry to vertex $i$ and the subsequent vertex. The constraint is then
+%
+% \begin{align}
+%   \sum_{v} x_{i,v}^k (\tau_{i,k}^{\rm visit} + \tau_{i,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{i,v}^k - t_{v,i}^k),
+%   \qquad i\in V, k \in \mathcal{F}^{\rm lorry}.
+% \end{align}
+
+A lorry can arrive at, but not service, a vertex before the start of the vertex's time window.
+The maximum speed of a lorry and a trailer together is equal to the minimum of their maximum speeds.
+\\
+
+The following function calculates the amount of travel time
+ that it took the vehicles that have traversed edge $(u,v) \in \mathcal E$ in path assignment $(X,Y)$,
+%
+% travel time of edge $(u,v) \in \mathcal E$ of the vehicles that have traversed it given path assignment $(X,Y)$,
+\begin{align}
+  travelTime(u,v,X,Y) =
+  \sum_{k \in \mathcal F^{\rm lorry}}
+  \left (
+  % minus the time it took to travel there
+  % travel time is lorry travel time
+  x^k_{u,v}
+   \tau_{u,v,k}^{\rm travel}
+  % and the delta time if k is pulling a trailer  l
+  +
+  \sum_{l \in \mathcal F^{\rm trailer}}
+  y^{k,l}_{u,v}
+  \tau^{\rm extra }_{u,v,k,l}
+  \right)
+  % is equal to departure time at u hence minus visit duration
+  %%
+  \notag
+  \end{align}
+
+A lorry starts a vertex visit as soon as it arrives or as soon as the time window opens, whichever is latest.
+After a lorry finishes a visit it departs immediately towards the vertex' successor.
+Hence, given the path assignment $(X,Y)$ and time table $T$ the start time of the visit of vertex $u \in \mathcal V$ can be calculated with the following function,
+\begin{align}
+  visitationStart(u,X,Y,T) =
+  % arrival time at vertex that is visited after u if lorry was alone
+  \sum_{v \in V}
+  \left(
+  \sum_{k \in \mathcal F^{\rm lorry}}
+  \left(
+  t_{u,v}^k -
+  x^k_{u,v}
+   \tau_{u,k}^{\rm visit}
+   \right)
+  -
+  travelTime(u,v,X,Y)
+  % is equal to departure time at u hence minus visit duration
+  %%
+  \right)
+  % is equal to the start of visit at u
+  \notag
+\end{align}
+
+
+A vertex must be visited early enough such that the visit, which may include loading supply, can be finished before the end of the vertex's time window. If an edge is not traversed by a lorry, the arrival time of that edge for that lorry is zero,
+% \begin{align}
+%     t^k_{i,j}   \leq   x^{k}_{i,j} \left(
+%     \tau^{\rm end}_j - \tau^{\rm visit}_{j,k}
+%     \right)  \quad
+%     i,j \in  V ,
+%     \ k \in \mathcal F^{\rm lorry}.
+% \end{align}
+\begin{align}
+  \label{eq:time-window}
+    \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}}
+    \left( t^k_{u,v}  -
+     x^{k}_{u,v} \left(
+    \tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
+    \right)  \right) \leq 0,
+    \quad
+    u \in  V .
+  \end{align}
+
+The time that a lorry needs between two consecutive vertex arrivals is possibly some waiting time before the visit starts, the duration of the first vertex visit plus the lorry's travel time between the two vertices,
+% \begin{align}
+%   \sum_{v \in V} t^k_{v,i} - t^k_{i,j} +
+%   (x^{k}_{i,j} - 1  ) \tau^{\rm max}   \leq
+%   -x^{k}_{i,j} \left(
+%   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,k}
+%   \right),    \quad i,j \in  V ,
+%   \ k \in \mathcal F^{\rm lorry}.
+% \end{align}
+\begin{align}
+  \label{eq:time-hard-first}
+  \sum_{v\in V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{u,v}^k - t_{v,u}^k),
+  \qquad u\in V \setminus M^-, k \in \mathcal{F}^{\rm lorry}.
+\end{align}
+
+
+
+
+If a lorry is pulling a trailer whilst traversing an edge its maximum speed could be lowered, hence the following constraints also need to be satisfied,
+% \begin{align}
+%   \sum_{v \in V} t^k_{v,i} - t^k_{i,j} +
+%   (y^{k,l}_{i,j} - 1  ) \tau^{\rm max}   \leq
+%   -y^{k,l}_{i,j} \left(
+%   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,l}
+%   \right),    \quad i,j \in  V ,
+%   \ k \in \mathcal F^{\rm lorry},
+%   \ l \in \mathcal F^{\rm trailer}.
+% \end{align}
+\begin{align}
+  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - t_{v,u}^k),
+  \qquad u\in V \setminus M^-, l \in \mathcal{F}^{\rm trailer}.
+\end{align}
+
+% function for big M, basically isVisited, returns bool
+% \begin{align}
+%   isVisited(r^{-,j}_m, X,Y, T) +
+% \end{align}
+
+A trailer must be decoupled at a transshipment vertex before it can be coupled again at the corresponding couple vertex,
+% \begin{align}
+%   visitationStart(r^{-,j}_m, X,Y, T) +
+%   \left(  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{r^{-,j}_m,v} -1 \right)
+%   \tau^R
+%   \leq
+%   visitationStart(r^{+,j}_m, X,Y, T) , \\
+%   \quad j \in \mathcal L^{\rm transshipment} , \ m \in \{1,\ldots,\eta\}. \notag
+% \end{align}
+%
+% or alternatively
+\begin{align}
+  visitationStart(u, X,Y, T) +
+  \left(  \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w} -1 \right)
+  \tau^R
+  \leq
+  visitationStart(v, X,Y, T) ,
+  \quad (u,v) \in \mathcal E^{\rm pairs}
+\end{align}
+
+The time a lorry needs  between the start of the time window of the vertex it is currently at and arriving at the next vertex is at least the time needed for the current vertex's visit plus the lorry's travel time between the two vertices,
+% \begin{align}
+%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
+%   (x^{k}_{i,j} - 1  ) \tau^{\rm max}   \leq
+%   -x^{k}_{i,j} \left(
+%   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,k}
+%   \right),    \quad i,j \in  V ,
+%   \ k \in \mathcal F^{\rm lorry}.
+% \end{align}
+\begin{align}
+  \sum_{v \in V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{i,v}^k - x^k_{v,u} \tau_u^{\rm start}),
+  \qquad u\in V \setminus M^- , k \in \mathcal{F}^{\rm lorry}.
+\end{align}
+
+
+
+
+And again, if a lorry is pulling a trailer its maximum speed could be lowered, hence the following constraints also need to be satisfied,
+% \begin{align}
+%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
+%   (y^{k,l}_{i,j} - 1  ) \tau^{\rm max}   \leq
+%   -y^{k,l}_{i,j} \left(
+%   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,l}
+%   \right),    \quad i,j \in  V ,
+%   \ k \in \mathcal F^{\rm lorry},
+%   \ l \in \mathcal F^{\rm trailer}.
+% \end{align}
+\begin{align}
+  \label{eq:time-hard-last}
+  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - x^k_{v,u} \tau_u^{\rm start}),
+  \qquad u\in V \setminus M^- , l \in \mathcal F^{\rm trailer}.
+\end{align}
+
+
+%
+% experiment to replace previous 2 equations
+% \begin{align}
+%   \label{eq:time-hard-last}
+%   \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{i,j} (\tau_{i,k}^{\rm visit} + \tau_{i,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{i,v}^k - x^k_{v,i} \tau_i^{\rm start}),
+%   \qquad i\in V \setminus M^- , l \in \mathcal F^{\rm trailer}.
+% \end{align}
+
+
+
+
+
+
+
+
+
+
+\subsubsection{Symmetry Breaking Constraints}
+\label{sec:symmetry}
+
+Each transshipment location has $\eta$ duplicate decouple and couple vertex pairs. They can be ordered with the following constraint to reduce the solution space,
+\begin{align}
+  \sum_{w \in V}
+  \sum_{k \in \mathcal{F}^{\rm lorry} }
+  \left( x^{k}_{w,u} - x^{k}_{w,v} \right) \geq 0,
+  \quad (u,v) \in \mathcal E^{\rm pairs}
+  % \{ (r^{u,-}_v,r^{u,-}_{v+1})  : \ u \in \mathcal L^{\rm transshipment},
+  % \ v    \in \{ 1,\ldots,\eta -1 \} \} . \notag
+\end{align}
+
+There are still many sources of symmetry.
+Not every vehicle has unique features, hence many vehicles are interchangeable.
+Furthermore, the ordering of transshipment pair still permits some symmetry.
+Further removing these  sources of symmetry is outside the scope of this thesis and may be interesting for future work.
+%
+% the same can be done for trailer of the same type.
+% \begin{align}
+%   \sum_{i \in V}
+%   \sum_{k \in \mathcal{F}^{\rm lorry} }
+%   \left( x^{k}_{i,j} - x^{k}_{i,m} \right) \geq 0, \\
+%   \quad (j,m) \in \{ (n^{u,-}_v,r^{u,-}_{v+1})  : \ u \in \mathcal L^{\rm transshipment},
+%   \ v    \in \{ 1,\ldots,|\mathcal{F}^{\rm class, l}| -1 \} \} . \notag
+% \end{align}
+%
+% \begin{align}
+%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} + (y^{k,l}_{i,j} - 1  ) \tau^{\rm max} \leq \begin{cases}
+%
+%  \end{cases} \\
+%  \quad \ i,j \in  V ,
+%  \ k \in \mathcal F^{\rm lorry} ,
+%  \ l \in \mathcal F^{\rm trailer} . \notag
+% \end{align}
+%
+%
+% a more aggressive form  of ordering can also be used, which I will only use for lorries of the same type.
+%
+% \todo{I would have used the more aggresive ordering version for all three (lorry, trailer, transshipment pairs) sources of duplication, but I belief I that would also remove some viable non duplicate solution from the solution space.}
+%
+% TODO?
+% \begin{itemize}
+%   \item the solution space can be reduced further by asserting that equivalent transshipment pairs follow a certain ordering, e.g. if two pairs are used, the pair with the lowest index is used in the lorry with the lowest index.
+%   \item the solution space can be reduced further by asserting that lorries and trailer for which all parameters are equal follow a certain ordering.
+% \end{itemize}
+
+%TODO \todo{add more symetry breakig constraints such that I don;t have to describe /need filter . QQQ: Still need tabu list if i don't have duplicates anymore?? ?}
+% \subsubsection{Decision Variable Constraints}
+%
+% \begin{align}
+%   x^k_{i,j}, \ x^{k,l}_{i,j} \in \{ 0,1 \}
+% \end{align}
+% $
+% i,j \in  V ,
+% \ k \in \mathcal F^{\rm lorry},
+% \ l \in \mathcal F^{\rm trailer}
+% $. \\
+%
+% \begin{align}
+%   z^k_{i,j}, \ x^{k,l}_{i,j} \in \{ 0,1 \}
+% \end{align}
+% $
+% i,j \in  V ,
+% \ k \in \mathcal F,
+% \ l \in \mathcal F
+% $. \\
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% %% till her
+
+
+
+\subsubsection{Multiple Unload Constraint}
+% , the model without this constraint  will be named after the main consequence of removing this constraint; the vehicle routing problem with transfers, transshipments and multiple unloads (VRPTTMU) }%:
+The following constraint is the difference between the VRPTT and the VRPTTMU,
+ % constraint that when removed, turns the VRPTT into a VRPTTMU
+% The following constraint is added such that the model is similar to the model in ~\cite{drexl2014bandc}, such that findings from that paper can be used for benchmarking purposes.
+\begin{align}
+  \label{con:extra}
+  x^{k}_{u,v} = \ &  0, \\
+  \quad (u,v) \in \  & \{  (u',v') : u' \in V \setminus  M^+  , \ v' \in N^+  \} \cup \notag \\
+   & \{  (u',v') : u' \in N^- , \ v'  \in V \setminus   M^-   \} ,\notag \\
+  \ k \in \ & \mathcal{F}^{\rm lorry} . \notag
+\end{align}
+The constraint ensures that a lorry can couple (decouple) a trailer at the depot if and only if it is the first (last) thing it does on its path, which hinders multiple unloads. \\
+% -------------------
+
+%
+% When constraint (\ref{con:extra}) is removed lorries are not limited anymore to only coupling (decoupling) trailers at the depot at the beginning (ending) of their path, which reflects most real-life situations.
+% % From now on we will refer to the problem that emerges when (\ref{con:extra}) is removed as the vehicle routing problem with trailers and transshipments and multiple unloads (VRPTTMU).
+% This may result in a strange situation where a lorry couples a trailer at the depot, transfers load to it and immediately decouples the trailer again, without the trailer even having left the depot.
+% The trailer functions in such a case  as an unloading dock.
+% This de facto removes the restriction that a lorry can only unload once at the depot.  \\
+%
+% This situation has some problems. Trailers will still incur their fixed costs even though de facto no trailer is used. Futhermore, this usage of trailers reduces the amount of available trailers that can be used as actual trailers. To resolve this issue, synthetic trailers are added to the model with no fixed costs, distance costs infinity and capacity infinity to function as unloading docks for the lorries. These trailers will never be used as actual trailer due to their distance costs.
+% % Therefore the costs incurred by a lorry that uses such a synthetic trailer as unloading dock are the time that it takes to couple and decouple at the depot.
+% \\
+%
+% If constraint (\ref{con:extra}) is  active these synthetic trailers don't have an impact on the best found solutions.
+% If a lorry would couple such a synthetic trailer, it will have to be the first event on its path after starting its path.
+% After coupling the trailer the lorry will either move away from the depot and incur infinit distance costs or go to the synthetic trailer's decouple vertex after which the lorry will have to end its path without having contributed at all.
+% % Using such a synthetic trailer as an unload dock does incur the costs
+% % The only cost using such a synthetic trailer still incurs is the impact that the added time time costs of coupling and decoupling the trailer at the depot. In this paper this is assumed a close enough approximation to the real-life situation. Furthermore, since this is a new model feature, any choice of parameter value is arbitrary.   \\
+%
+% % On the other hand,
+% % any choice I make for the time costs of unloading at the depot is doomed to be quite arbitrary and to obscure the effect that this new feature has on the solutions to the VRPTT. Therefore, we accept no costs for unloading as a reasonable choice.\\
+% %
+% % Then again, if I use a correction in the costs function I can just introduce one new parameter that indicates the cost. I can argue about what it shoud be in the results section. \\
+% %
+% %
+% %
+% % To keep things simple, I do not introduce a new set of vertices that belong to special unloading trailer that have 0 duration. The time that it takes to unload at the depot is now modeled to be equal to the time that it takes to couple and decouple a trailer at the depot, which seems seems reasonable.
+% % \\
+%
+%
+%
+%
+%
+% % TODO Drexl writes "for each arc ... is the traversal time, which is assumed to be the same for all
+% % vehicle classes ". For costs of Drexl's no-time VRPTT it does not matter. For time TTRP i do not know whether he uses the same speed for all vehicles. Probably he uses slowest speed such that all solutions are feasible.
+% % On the other hand I use the vehicles speed. Not some approx.
+%
+%
+% % \subsubsection{Multiple Unloads}
+% % If you want to somewhat simulate the case where it is allowed for a lorry to unload multiple times, then change the objective function somewhat such that trailers that only go from N+ to N- don't cost anything. These are now defacto extra unload docks.
+% %
+% %
+% The model without constraint (\ref{con:extra}) will be named after the main consequence of removing this constraint; the vehicle routing problem with transfers, transshipments and multiple unloads (VRPTTMU).
+%
+
+
+\subsubsection{Decision Variable Constraints}
+
+The binary decision variables are constrained as follows,
+
+\begin{align}
+x^k_{u,v}, y^{k,l}_{u,v} \in \{ 0,1 \} ,
+\quad u,v \in V,
+\ k \in \mathcal{F}^{\rm lorry},
+\ l \in \mathcal{F}^{\rm trailer}.
+\end{align}
+
+The real-valued nonnegative decision variables are constrained as follows,
+\begin{align}
+\label{con:last}
+t^k_{u,v}, z^{l}_{u,v} \in \mathbb{R}^0_+,
+\quad u,v \in V,
+\ k \in \mathcal{F}^{\rm lorry},
+\ l \in \mathcal{F}.
+\end{align}
+
+\subsubsection{Objective Function}
+
+The objective function that is minimized to solve the VRPTT and the VRPTTMU is the cost function $C$, which is the sum of the fixed costs, the distance variable costs and the time variable costs of the vehicles,
+\begin{align}
+   C(X,Y,T) = C^{\rm fixed}(X) + C^{\rm distance}(X,Y) + C^{\rm time}(X,Y,T),
+\end{align}
+all of which will be defined. The objective function is subject to constraints (\ref{con:first}) - (\ref{con:last}). \\
+
+The distance costs function $C^{\rm distance}$ is the sum of the distance costs of all traversed edges by all vehicles,
+\begin{align}
+   C^{\rm distance}(X,Y) =
+   \sum_{u,v \in V}
+   \sum_{k \in F^{\rm lorry}}
+   \delta_{u,v}
+   \left(
+   x^k_{u,v}  f_k^{\rm distance}
+   +
+   \sum_{l \in F^{\rm trailer}}
+   y^{k,l}_{u,v}  f_l^{\rm distance}
+   \right) .
+\end{align}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% If a lorry $k \in \mathcal F^{\rm lorry} $ departs from $i \in V$  without trailer, the departure time of the lorry is given by the following equation
+% \begin{align}
+% \sum_{j \in V }
+% \left(
+% t^k_{i,j} - x^k_{i,j}
+% \tau^{\rm travel}_{i,j,k}
+% \right),
+% \quad i = m^+_k
+% \end{align}
+
+% The duration of the path of a vehicle $k \in \mathcal F$ can be calulated as follows,
+% %TODO this is garbage. t path duration is a function!
+% % choose not to change though
+% \begin{align}
+% t^{\rm path-duration}_k = \begin{cases}
+% \sum_{j \in V }
+% \left(
+% t^k_{j,m^-_k} - t^k_{m^+_k,j} + x^k_{m^+_k,j}
+% \tau^{\rm travel}_{m^+_k,j,k}
+% \right),
+%  &\text{ if } \quad  k \in \mathcal F^{\rm lorry}, \\
+% \sum_{j \in V } \sum_{l \in \mathcal F^{\rm lorry} }
+% \left(
+% t^l_{j,n^-_k} - t^l_{j,n^+_k}
+% \right),
+%  & \text{ if } \quad  k \in \mathcal F^{\rm trailer},
+% \end{cases}
+% \quad k \in \mathcal F .
+% \end{align}
+%
+%
+%
+%
+%
+%
+% The time costs function $C^{\rm time}$ is the the sum of the time costs of all vehicles,
+%
+% \begin{align}
+%    C^{\rm time}(X,Y,T) =
+%    \sum_{k \in \mathcal F}
+%    t^{\rm path-duration}_k f^{\rm time}_k.
+% \end{align}
+
+The time costs function $C^{\rm time}$ is the the sum of the time cost of all vehicles,
+\begin{align}
+   C^{\rm time}(X,Y,T) =
+   \sum_{k \in \mathcal F^{\rm lorry}} f^{\rm time}_k
+  %  \sum_{u \in \mathcal M^+ \cup N^+}
+   \left(
+   visitationStart(m^-_k,X,Y,T) + \tau^{\rm visit}_{m^-_k} - visitationStart(m^+_k,X,Y,T)
+   \right)  \notag \\
+   \sum_{l \in \mathcal F^{\rm trailer}} f^{\rm time}_l
+  %  \sum_{u \in \mathcal M^+ \cup N^+}
+   \left(
+   visitationStart(n^-_l,X,Y,T) + \tau^{\rm visit}_{n^-_l} - visitationStart(n^+_l,X,Y,T)
+   \right) .
+  %  t^{\rm path-duration}_k f^{\rm time}_k.
+\end{align}
+
+
+The fixed costs function $C^{\rm fixed}$ is the the sum of the fixed costs of all used vehicles,
+
+% outside of the depot, such that trailers incur no fixed costs if they are only coupled to unload,
+\begin{align}
+   C^{\rm fixed}(X) =
+   \sum_{k \in \mathcal F^{\rm lorry}}
+   \left(
+   (1 - x^k_{m^+_k,m^-_k }) \cdot f^{\rm fixed}_k
+   +
+  %  \sum_{j \in R^- \cup S }
+  \sum_{v \in V  }
+  %  \sum_{v \in V \setminus N^-  }
+   \sum_{l \in \mathcal F^{\rm trailer}}
+   x^k_{v,n^+_l} \cdot f^{\rm fixed}_l
+   \right).
+\end{align}
+A lorry counts as being used when it has other vertices on its path than its start and end vertex.
+A trailer is considered as being used when it has been coupled.
+
+
+% \subsubsection{Alternative Objective Function}
+%
+% When constraint (\ref{con:extra}) is removed lorries are not limited anymore to only coupling (decoupling) trailers at the depot at the beginning (ending) of their path.
+% This may result in a lorry coupling a trailer at the depot, transfering load to it and immediately decoupling the trailer again, without the trailer even having left the depot.
+% The trailer functions in such a case  as an unloading dock.
+% This practically removes the restriction that a lorry can only unload once at the depot.
+%
+% This highlights a strange aspect of not using (31): A lorry may unload at a depot, without ending its route, only if there is a sufficiently empty trailer at that depot.
+% \\
+%
+% To explore the effects of allowing lorries to unload multiple times at the depot and to reflect the fact that in actuality no trailer is used in such a case, we can use an alternative fixed costs function where trailers only incur fixed costs if they are actually used as trailers,
+%
+% \begin{align}
+%    C^{\rm fixed-alternative} =
+%    \sum_{k \in \mathcal F^{\rm lorry}}
+%    \left(
+%    (1 - x^k_{m^+_k,m^-_k }) \cdot f^{\rm fixed}_k
+%    +
+%   %  \sum_{j \in R^- \cup S }
+%    \sum_{j \in V \setminus N^-  }
+%    \sum_{l \in \mathcal F^{\rm trailer}}
+%    x^k_{n^+_l,j} \cdot f^{\rm fixed}_l
+%    \right).
+% \end{align}
+% The only costs an extra unload at the depot by using a trailer will incur will be the time costs of coupling and decoupling a trailer, which seems reasonable.\\
+%
+% The alternative objective function then becomes,
+% \begin{align}
+%    C^{\rm alternative} = C^{\rm fixed-alternative} + C^{\rm distance} + C^{\rm time}.
+% \end{align}
+
+
+
+% TODO should be adapted if one wants to model empty trailer paths as extra loading places, because they need to be recognized as such and incur no fixed costs. WOOhoo, If you change definition of a tralier being used too, having left the depot, then you don't have to change a thing.  see next line:
+% The fixed costs function $C^{\rm fixed}$ is the the sum of the fixed costs of all used vehicles, where a lorry counts as being used if it has left the depot,
+
+% if you change definition of trailer being used also too has left the depot, you arrive at the cost function if you wnat to use trailer as extra unloading places for lorries. --> this is achieved by replacing the snippet
+% \sum_{k \in \mathcal F^{\rm lorry}}
+% \sum_{i \in V}
+% \sum_{l \in \mathcal F^{\rm trailer}}
+% x^k_{i,n^+_l} \cdot f^{\rm fixed}_l
+% WITH
+% \sum_{k \in \mathcal F^{\rm lorry}}
+% \sum_{i \in V \setminus N^-  OR instead I could use \in S \cup R^-}
+% \sum_{l \in \mathcal F^{\rm trailer}}
+% x^k_{n^+_l,i} \cdot f^{\rm fixed}_l
+
+
+
+
+
+
+
+
+% Feedback from Efraim
+%-----------------------
+% +"A VRPTT instance $(\mathcal N, \mathcal A,  V , \mathcal R)$ consists of a set $\mathcal N = \{1,\ldots, N\}$ of vertices, a set $\mathcal A = \{1,\ldots, A\}$ of arcs,  a set $ V  = \{1,\ldots, V\}$ of vehicles, and a set $\mathcal R = \{1,\ldots, R\}$ of requests. Let $\mathcal L = \{ {\rm depot}, {\rm lorry customer}, {\rm trailer customer}, {\rm TL} \}$ be a set of location types. Each vertex $n \in \mathcal N$ has a location type $loc_n \in \mathcal L$. Etc."
+
+ %Note that each vertex is automatically given a number, and that you can easily define sets of certain types of vertices as $\mathcal N^loc = \{n \in \mathcal N: loc_n = loc\}$ for $loc \in \mathcal L$.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

@@ -1,0 +1,163 @@
+\section{Conclusion}
+
+\label{chap:Discussion and Future Work}
+
+% disqualified data set for testing trailer sharing
+
+% improved ub for some instances excl costs
+
+% define exactly the what method of drexl i tried to follow with regards to time roudning
+
+% are there any instances that i have lower value than ttrp? if so, is that because error or because trailer sharing?
+
+% much smaller than transmission. they have much bigger instances. 24 depots. Perhaps persue ttrp first, after that see if i can extend the model, or postprocess ttrp sols for trailer sharing opportunities
+
+
+% A few contributions have been made in this thesis:
+% \begin{itemize}
+%   \item Trailers have their own maximum speed such that it is possible that a lorry's maximum speed is higher without a trailer than with a trailer.
+%   \item The manner in which the model represents load transfers has been simplified.
+%   \item The VRPTT has been remodeled such that it can be extended to the VRPTTMU by only removing one set of constraints and by adding a certain type of trailer to the instances that does not have   influence on the best solutions of the VRPTT.
+%   \item A variable neighborhood search heuristic has been presented and implemented which found solutions for the VRPTT and the VRPTTMU  for all instances with up to eight customers in minutes.
+%   \item The results of this heuristic were used to show that it is not at all clear that the instances used in this thesis are suitable to show the benefits of trailer sharing.
+%   % \item An example of an instance that does benefit from trailer sharing has been given.
+%
+% \end{itemize}
+
+%
+% The VRPTT has been remodeled such that it can be extended to the VRPTTMU by only removing one set of constraints and by adding a certain type of trailer to the instances that does not have   influence on the best solutions of the VRPTT.
+A few contributions have been made in this thesis.
+Trailers have their own maximum speed such that it is possible that a lorry's maximum speed is higher without a trailer than with a trailer.
+The manner in which the model represents load transfers has been simplified by removing the need for vertices only dedicated to transfering load.
+The VRPTT has been remodeled such that it can be extended to the VRPTTMU by only removing one set of constraints and by adding a certain type of trailer to the instances that does not have   influence on the best solutions of the VRPTT.
+The VRPTTMU is able to represent the situation where lorries visit the depot multiple times without ending their path to either couple or decouple a trailer or to unload their load.
+This allows lorries to take multiple trips which resulted in significantly decreased costs on many test instances.
+A variable neighborhood search heuristic has been presented and implemented which found solutions for the VRPTT and the VRPTTMU  for all instances with up to eight customers in minutes.
+The objective function of the VRPTT has been extended such that besides the fixed costs and the distance related costs, the  objective function is also a function of the time related costs.
+This allowed a comparison with results to the TTRP for the first time, which showed that it is not at all clear that the instances used in this thesis are suitable to show the benefits of trailer sharing.
+Perhaps these benefits become more apparent as the size of the problem instance grows.
+% \item An example of an instance that does benefit from trailer sharing has been given.
+\\
+
+
+% Powerful algorithms for solving the VRPTT do not exist yet \cite{drexl2014bandc}.
+% Stochastic optimization methods and/or heuristics may offer solutions in cases where solving problems exactly is too slow.
+% Developing such an algorithm is therefore the most logical first step towards solving TransMission's problem. This task is the scope of this thesis. The optimization method will be a simplified version of the ALNS, namely a variable neighborhood search (VNS). The ALNS  has shown promising results on large instances in \cite{masson2013adaptive}.\\
+
+The aim of this thesis was to develop a heuristic that can handle larger instances than exact methods and that can be extended such that it can be used to develop a solution for  TransMission's problem.
+This goal has been achieved with the VNS heuristic.
+The heuristic found in a short period of time reasonably good solutions for all tested instances, even for the instances for which the exact method could not find a solution.
+An extension of the model that reduces costs has already been demonstrated by allowing lorries to unload multiple times.
+Furthermore, since the heuristic is fairly simple and unoptimized, there is reason to believe that it can be optimized for better performance. \\
+
+
+Before the results of this thesis can be used by TransMission to produce transport plans some work still has to be done.
+The model has to be extended such that it supports multiple commodities, multiple depots and split deliveries.
+% Futhermore, it has to perform well the optimization method has to be tested on and optimized for much larger instances.
+
+% Extened the vprtt.
+% raised doubts about validity of instances.
+% a variable neighborhood search hurisitic is implemented to solve the problems.
+%
+% --------------------------------------------
+%
+% modelling of load transfer
+% A few additions have been made to the VRPTT model.
+% The  VRPTT model has been extended in a realistic way  that makes solutions with lower costs feasible by allowing lorries to unload multiple times at the depot.
+% The model has also been simplified by removing vertices specific for load transfers from the model.
+%
+% TODO: some indication that the instances used in this thesis are not well suited to show the benefits of trailer sharing.
+% On the other hand, perhaps sharing trailers becomes more advantageous as the size of the instance increases.
+%
+% These instances were very suitable  to demonstrate the advantage of a lorry being able to visit the depot multiple times, either to decouple or couple a truck or to unload.
+%
+%
+% Furthermore, a simple search heuristic was presented for the VRPTT which performs reasonably well.
+% It was able to find feasible solution for all instances within a short running time.
+
+\section{Future Work}
+\label{chap:future-work}
+% An obvious improvement that can be made to the model is to reduce the amount of symmetry in the model.
+% In the current representation of a solution, multiple representations can map to the same solution.
+% This can be alleviated by adding constraints which remove that symmetry.
+% Another improvement is to remove the need to create $\eta$ transshipment vertex pairs for each transshipment location, but to generate them when needed by the optimization method. \\
+
+There are improvements that can be made to the model:
+\begin{itemize}
+\item The amount of symmetry in the model could be reduced by adding certain constraint to the model.
+In the current representation of a solution, multiple representations can map to the same solution.
+\item The need to create $\eta$ transshipment vertex pairs for each transshipment location instead of generating them when needed by the optimization method can be removed.
+\end{itemize}
+
+There are ways that the model can be extended:
+\begin{itemize}
+  \item The model can be extended from a vehicle routing problem to a pickup and delivery problem.
+  \item The model can be extended such that it can represent a set of customers that can change during the time horizon.
+  \item The model can be extended such that it supports multiple depots.
+  \item The model can be extended such that it can model split deliveries.
+\end{itemize}
+
+There are improvements that can be made to the optimization method:
+\begin{itemize}
+\item More constraints could be turned into soft constraints like the precedence of decoupling a trailer over coupling a trailer at a transshipment vertex.
+\item A solution can be decomposed into several subsolution which are independent of each other with respect to each others load and time table.
+The current method recalculates the sub-solutions for each new solution even if the sub-solutions have already been seen before in other solutions.
+This can be resolved by caching the sub-solutions of solutions.
+\item New operators can be developed to speed up the search heuristic.
+\item The parameters used by the optimization method can be tuned by performing a  hyperparameter optimization.
+\item The time table algorithm can be improved for the VRPTTMU which potentially leads to a reduction of trailers' time related cost.
+\item A probabilistic datastructure like a bloom filter can be used for the tabu table to reduce its memory consumption.
+\item The method could be adapted such that it can be executed in parallel.
+\end{itemize}
+
+There are improvements that can be made to the testing method:
+\begin{itemize}
+\item The influence that neighborhood operators have on the results could be tested.
+\item The influence that turning a constraint into a soft constraint has on the results could be tested.
+\item The method can be tested for more iterations and on larger instances.
+\item Different types of instances could be used to test the relation between instance characteristics and the benefits of trailer sharing.
+\end{itemize}
+
+
+
+
+\begin{comment}
+
+\begin{itemize}
+\item futher reduction of time -dependent trailer costs in VRPTTMU by better tiem table scheduling
+\item when lorry visits a trailer customer with trailer and wants to uncouple, remove state whether decoupling happens before supply collection or after. Source of symmetry.
+\item replace current tabu set with something like a bloom filter. which has better memory and speed characteristics and only has a small probability of but small probability of false positive which will lead you to know evaluate a random solution.
+\item reformulate the model such that y is not necessary. All the trailer paths and assginemtnes can already be deduced from x.
+\item instead of generating all logic equiv and storing them, reduce back to canonical form. First check for the found form, then reduce and check
+\item have cash for time dependent paths.
+\item some more sophisticated priority functions that for example also weights which operator is applied.
+\item decompose vehicle assignment from paths searching.
+\item decompose path construction from grouping customers, i.e. a path or multiple paths with possibly use of trailers is  independently planned for group of customers .
+\item currently start and stop time of lrry is equal to start and stop time of depot. In future i could give individual times per lorry.
+\item Let lorries start later if that is more optimal instead of starting each lorry at the start of its time window.
+\item instead of generating all identicals, reduce to unique sort, using some kind of topological sort and prove that it is unique.
+\item use some form of memozation. For example, cost of an indepent vehicle route, can be looked up before evaluated.
+\item add actions that can evaluate a neighboring solution without having to calculate a full evaluation. For example in case you know the change does not impact any other route. And you can efficiently calculate delta time and delta distance. Much more computationally efficient.
+\item add some initial solution method to speed up computation.
+\item add new search methods like 3-opt and hyperopt
+\item More efficient method for choosing action, in particular reducing regret. Perhaps even using current state of instead of past results.
+\item Allow vehicles to unload at the depot without ending their route.
+\item Dynamic allocation of vertices to couple and uncouple pairs. Now I have to statically allocate them on forehand. I can use this same method to dynamically allocate unload locations at the depots. Now a vertex is tied to an operation and a location. Time, cap and lorry are assigned to it. Would be nice if operation and location were also assignable.
+\item Extend the model to pickup-and-delivery
+\item Further explore adding extra trailers to instances that serve as extra unload places for lorries. Give them huge distance costs such that won't be used for anywhere else than on the depot.
+
+\item Define an extension of the Generalized Assignment Problem that can be used for vehicle assignment. I nput is a certain set of paths, output is the cheapest assignment of vehicles to these paths that does not violate any time constraints of load constraints. There are no load costs. Whether there is a way to put the load in available vehicles is possible to solve with constraint solver. Do I even need maxflow? The way load flows from lorry to trailer can be determined with a few extra vars in the integer program. Time costs can be expressed in terms of the vehicle assignment. This can be used to speed up the search (either compute for each in consume or add as one of the actions), or to dramatically reduce the solution space. The solution space now only represents trailer start and end vertices, transshipment couple and decouple vertices and supply collection vertices.
+\item explore whether I cannot reduce the load problem to a much smaller problem. A constraint satisfaction problem. The amount of unknown variables is equal to the amount of trailer segments, since the only unknowns are how much load a lorry transfers to a trailer during a segment.
+\item Given a paths can I express load as constraint satisfaction and time as symbolic function such that both can be efficiently computed for different vehicle assignments.
+\item Just like the last item see if I can do more with symbolic programming and constraint satisfation. Time table can be expressed in terms of vehicle assingment. load table constraint satisfaction problem.
+\item include some notion of progress, e.g. currently at iteration 1000 of 2000 to guide how exploration vs exploitation. Hence the pq sorting key (-> search direction) will depend not only on task_features but aslo  on current iteration.
+\item more intelligent chooser for which task to execute, perhaps use rl
+\item process task in parallel. Perhaps using aws lambda or on gpu using opencl
+\item Insert more types of actions, e.g. like 2-opt
+\item Futher reduce search space s.t. it does not matter in which order you uncouple, i.e. first uncouple at trailer customer then supply collect or first supply collect then trailer uncouple can be made the same, if it does not matter for the solution. Problem:: it may matter for solutions that can be made out of this solution. Soltuion perhaps?, introduce 2-opt.
+\item Perhaps use first smaller problem ttrp than remove constraint st trailers can be shared to solve vrptt with bigger solution space, then remove another constraint s.t. lorry paths  dont have to end if they arrive at depot. Hence three levels of problem. Do this by adding actions.
+\item express solutions a bit different such that  I don't have to generate all duplicates, but such that there is only 1 way to express a functional equivalent solution by not expressing which vehicle, and which trailer and which .
+
+\end{itemize}
+
+\end{comment}

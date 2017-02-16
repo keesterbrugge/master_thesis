@@ -1,0 +1,1772 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Theory}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\label{chap:Theory}
+
+%%%%%%%%%%%%%%%%%
+% optimization method
+%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Optimization Method }
+\label{chap:Optimization}
+
+% In this Section the structure of the algorithm is given. A search heuristic is used to generate vehicle paths and vehicle assignments.
+% A load table is calculated by solving a maximum flow problem, given the vehicle paths and vehicle assignments.
+% A time table is calculated by solving a longest path problem, given the vehicle paths and vehicle assignments.
+
+%
+% The vehicles' paths are denoted as path assignment $(X,Y)$, where
+% % A solution to the VRPTT consists of the lorries' paths,
+% $ X = (x^k_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$,
+% and
+% $ Y = (y^{k,l}_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry}$.
+% Let
+% $ T = (t^k_{u,v}) $ for $ k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$
+% be the time table and let
+% $ L = (z^k_{u,v}) $ for $ k \in  \mathcal F, u,v \in \mathcal V$
+% be the load table.
+% A solution to the VRPTT can then be expressed with the tuple $(X,Y,L,T)$.\\
+
+%
+% and the load table as
+%
+% $l \in  \mathcal F^{\rm trailer}, u,v \in \mathcal V $,
+% the time table of the lorries on those paths,
+% $ T = (t^k_{u,v}) $ for $ k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$ and the load tables of the vehicles on those paths,
+% $ L = (z^k_{u,v}) $ for $ k \in  \mathcal F, u,v \in \mathcal V$.
+% For the sake of simplicity from now on the vehicle paths and the vehicle assignments are referred to as the path assignment
+% $X,Y := (X,Y)$.
+% A solution to the VRPTT can then be denoted with the tuple $(X,Y,L,T)$, where
+% $ X = (x^k_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry}, u,v \in \mathcal V$,
+% $ Y = (y^{k,l}_{u,v}) \text{ for } k \in  \mathcal F^{\rm lorry},
+%
+% .    \\
+
+The optimization method used in this thesis is a variation of the variable neighborhood search (VNS).
+Multiple neighborhood structures are used the search to avoid getting stuck in local optima.
+This section describes how this heuristic is used to obtain solutions that satisfy the model constraints. \\
+
+
+
+The optimization method includes finding solutions satisfying only a subset of the model constraints. Coverage of which constraints may be violated in this process will be given in Section \ref{sec:relaxation} .
+In Section \ref{sec:neighborhood} neighborhood structures are described which are used to find new path assignments.
+In Section \ref{sec:load} it is shown how to cast the calculation of a load table related to a path assignment as a maximum flow problem.
+In Section \ref{sec:time} the method used to calculate a load table related to a path assignment by solving a longest path problem is described.
+In Section \ref{sec:algo} the overall structure of the algorithm is described.
+
+
+
+
+
+% A solution to the VRPTT consists of lorry paths and the lorries assigned to those paths,
+% $ X = (x^k_{i,j}) \text{ for } k \in  \mathcal F^{\rm lorry}, i,j \in \mathcal V$,
+% the trailer assignments ,
+% $ Y = (y^{k,l}_{i,j}) \text{ for } k \in  \mathcal F^{\rm lorry},
+% l \in  \mathcal F^{\rm trailer}, i,j \in \mathcal V $,
+% the time table of the lorries on those paths,
+% $ T = (t^k_{i,j}) $ for $ k \in  \mathcal F^{\rm lorry}, i,j \in \mathcal V$ and the load tables of vehicles on those paths,
+% $ L = (z^k_{i,j}) $ for $ k \in  \mathcal F, i,j \in \mathcal V$.
+% For the sake of simplicity from now on the vehicle paths and the vehicle assignments are referred to as the path assignment
+% $X,Y := (X,Y)$. \\
+
+
+% By exploring a neighborhood of a previously found path assignment new path assignment are founds.
+% Multiple neighborhood structures can be used to speed up the process of finding high quality path assignments.
+
+%%%%%% everything above already used %%%%%%%
+
+
+
+
+
+\subsection{Constraint Violations }
+\label{sec:relaxation}
+
+In the process of finding solutions that satisfy all constraints it is helpful to also consider solutions that only satisfy a subset of the constraints.
+The constraints that may be broken by solutions are called the soft constraints.
+The penalties that are incurred by breaking the soft constraints are covered below.
+All constraints not mentioned below are hard constraints. \\
+
+
+% Some constraints are relaxed during the search to allow intermediate solutions that do not satisfy all constraints.
+% If these constraints are violated by a solution, it will be less likely that its neighborhood will be explored.
+% If other constraints than these are violated, $(X,Y)$ is not path-valid and is not even evaluated.
+
+% Path assignments that do not break any constraints not listed below are semi-valid. Their neighborhoods are still explored. They, however, can not be part of a solution to the VRPTT.
+
+% As stated in (\ref{chap:idea}), an $(X,Y)$ with related $L$ and $T$ might incur penalty $PEN(X,Y,T,L;\boldsymbol{\omega})$.
+
+
+ If in a path assignment  not all customers are served, constraint
+(\ref{con:customer_served})
+is broken.
+Let
+$\omega^{\rm unserved-customer}$
+be the penalty incurred per unvisited customer vertex and
+let
+\begin{align}
+	U^{\rm unserved-customer}(X,Y) =
+	 \omega^{\rm unserved-customer} \left( |\mathcal S| -
+	 \sum_{u \in \mathcal V}
+	\sum_{v \in \mathcal S}
+	\sum_{k \in \mathcal F^{\rm lorry}}
+x^k_{u,v}
+\right)
+\end{align}
+ be the total of the penalties incurred by not visiting customers' supply collection vertices. \\
+
+If in a path assignment a lorry customer is visited with a trailer, constraint
+(\ref{eq:lorrycustomer}) is broken.
+Let  $\omega^{\rm lorry-customer}$ be the penalty incurred per lorry customer visited with a trailer and let
+\begin{align}
+	U^{\rm lorry-customer}(X,Y) =
+	\omega^{\rm lorry-customer}
+	\sum_{u \in \mathcal V }
+	\sum_{v \in \mathcal S^{\rm lorry} }
+	\sum_{k \in \mathcal F^{\rm lorry} }
+	\sum_{l \in \mathcal F^{\rm trailer} }
+	 y^{k,l}_{u,v}
+\end{align}
+be the total of the penalties incurred by visiting lorry customers with trailers. \\
+
+If in a time table the end of a vertex' time window is broken, then one constraint of the set of constraints
+(\ref{eq:time-window}) is broken.
+Let  $\omega^{\rm time-window}$ be the penalty incurred per unit time and let
+\begin{align}
+  \label{pen:time}
+	U^{\rm time-window}(X,Y,T) =
+	\omega^{\rm time-window}
+	\sum_{u,v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}}
+	\max \left( 0,  t^k_{u,v}  -
+	 x^{k}_{u,v} \left(
+	\tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
+	\right)
+	 \right)
+\end{align}
+be the total of the penalties incurred by violating the ends of the vertices' time windows. \\
+
+If in a load table the vehicles do not have enough capacity to load the all of the supply of the visited customers, a  constraint of the set of constraints
+(\ref{eq:supply}) is broken.
+Let  $\omega^{\rm capacity-shortage}$ be the penalty incurred per unit supply that is not picked up of the visited customers and let
+\begin{align}
+  \label{pen:load}
+	U^{\rm capacity-shortage}(X,Y,L) =
+	\omega^{\rm capacity-shortage}
+	\sum_{j \in \mathcal L^{\rm customer}}
+	\sum_{u \in \mathcal V}
+	\left(
+	\sum_{k \in \mathcal F^{\rm lorry} }
+	x^k_{u,s_j}
+	loc_j^{\rm supply} -
+	\sum_{ k \in \mathcal F }
+	\left(
+		z^k_{s_j,u}
+	-
+		z^k_{u,s_j}
+	\right)
+   \right)
+\end{align}
+be the sum of the  penalties incurred by leaving behind supply at the visited supply collection vertices. \\
+% \item
+% If incompatible vehicles are coupled, constraint
+% (\ref{eq:vehicle-compatibility}) is broken.
+% Let  $\omega^{\rm vehicle-compatibility}$ be the penalty incurred per time an incompatible pair of vehicles couples.
+% \item
+% If constraint (\ref{con:extra}) is active, but lorries couple or decouple trailers at the depot at times other than the start or the end of their path respectively constraint
+% (\ref{con:extra}) is broken.
+% Let  $\omega^{\rm unloads}$ be the penalty incurred per lorry that breaks this constraint.
+% \end{itemize}
+
+The penalty $U$ of a solution $ (X,Y,L,T)$ is the sum of all incurred penalties,
+\begin{align}
+	U(X,Y,L,T) = U^{\rm unserved-customer}(X,Y,L,T) +
+	U^{\rm lorry-customer}(X,Y) + \\
+	U^{\rm time-window}(X,Y,T) +
+	U^{\rm capacity-shortage}(X,Y,L) \notag
+%
+% 	 \omega^{\rm unserved-customer} \left( |S| -
+% 	 \sum_{i \in \mathcal V}
+% 	\sum_{j \in S}
+% 	\sum_{k \in \mathcal F^{\rm lorry}}
+% x^k_{i,j}
+% \right) + \\\notag
+%
+% \omega^{\rm lorry-customer}
+% \sum_{i \in \mathcal V }
+% \sum_{j \in S^{\rm lorry} }
+% \sum_{k \in \mathcal F^{\rm lorry} }
+% \sum_{l \in \mathcal F^{\rm trailer} }
+%  y^{k,l}_{i,j} \
+%   + \\ \notag
+ %
+ % \omega^{\rm time-window}
+ % \sum_{i,v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}}
+ % \max \left( 0,  t^k_{i,v}  -
+ % x^{k}_{i,v} \left(
+ % \tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
+ % \right)
+ %  \right) + \\ \notag
+ % %
+	% \omega^{\rm capacity-shortage}
+	% \sum_{m \in \mathcal L^{\rm customer}}
+	% \left(
+	% loc_m^{\rm supply} -
+	% \sum_{i \in \mathcal V}
+	% \sum_{ k \in \mathcal F }
+	% \left(
+	% 	z^k_{s_m,i}
+	% -
+	% 	z^k_{i,s_m}
+	% \right)
+  %  \right) + \\ \notag
+	%
+%  \omega^{\rm time-window} \left(
+%  \sum_{i,v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}}
+%  \max \left( 0,  t^k_{i,v}  -
+%  x^{k}_{i,v} \left(
+%  \tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
+%  \right) \right)
+% 	\right) + \\ \notag
+% 	%
+%  \omega^{\rm time-window} \left(
+%  \sum_{i,v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}}
+%  \max \left( 0,  t^k_{i,v}  -
+%  x^{k}_{i,v} \left(
+%  \tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
+%  \right) \right)
+% 	\right) + \\ \notag
+% %
+%
+%
+\end{align}
+
+
+A solution to the VRPTT should satisfy all constraints, i.e.,constraints (\ref{con:first}) - (\ref{con:last}).
+A solution to the VRPTTMU should satisfy the same constraints except for constraint (\ref{con:extra}).
+The hard constraints consist of all model constraints other than soft constraints (\ref{con:customer_served}),(\ref{eq:lorrycustomer}), (\ref{eq:time-window}) and (\ref{eq:supply}).
+
+% Let
+% $\mathcal{X,Y}$
+% be the set of all possible path assignments.
+% Let
+% $\mathcal{X,Y}^{\rm semi}  \subseteq \mathcal{X,Y} $
+% be the set of semi-valid path assignments.
+% Let
+% $\mathcal{X,Y}^{\rm valid} \subseteq \mathcal{X,Y}^{\rm semi}$
+% be the set of valid path assignments.
+
+\subsection{Neighborhoods}
+
+\label{sec:neighborhood}
+
+% By exploring a neighborhood of a previously found path assignment new path assignment are founds.
+% Multiple neighborhood structures can be used to speed up the process of finding high quality path assignments.
+In this section multiple neighborhood operators will be introduced.
+A neighborhood operator takes as input a path assignment and generates new path assignments by changing some part of the input path assignment.
+% Let
+% $\mathcal O$
+% be the set of neighborhood operators.
+% Apllying an operator $o \in \mathcal O$
+% to a path assignment $(X,Y)$ yields new path assignemnts.
+% Let
+% $\mathcal{N}(X,Y, o)$
+% be a set of path assignments that consists of  neighbors of path assignment
+% $X,Y $%\in \mathcal{X,Y}^{\rm semi}$
+% where the neighborhood structure is defined by operator
+% $o \in \mathcal O$.
+% The neighborhood operators are such that when a neigborhood operator
+% $ o \in \mathcal O$
+% is applied to a semi-valid path assignment
+% $X,Y \in \mathcal{X,Y}^{\rm semi} $
+% the resulting neighborhood
+% $\mathcal{N}(X,Y, o) \subseteq \mathcal{X,Y}^{\rm semi} $
+% is a set of path assignments that are all semi-valid. \\
+% The following operators
+% can be applied to a path assignment to find new path assignments.
+These new path assignments are filtered out if they break any hard constraints.
+% Every yielded path assignment $(X,Y)$ is checked against the constraints.
+% If a path assignment violates the hard constraints it is filtered out.
+% If $(X,Y)$ violates only the soft constraints it incurs a penalty
+Some operators are designed to yield improved path assignments.
+Some are designed to enable other operators to yield improved path assignments.
+%
+% The following operators are used in the search heuristic:
+The following operators
+can be applied to a path assignment to find new path assignments:
+\begin{itemize}
+	% \item \textit{Insert customer:} For each unvisited customer's supply collection vertex and  for each possible position on each lorries' paths yield the path assignment with the supply collection vertex inserted in that position.
+	\item \textit{Move customer:} For each customer's supply collection vertex and  for each possible position on each lorry's path the operator yields the path assignment with the supply collection vertex inserted in that position and  removed from its previous position.
+	\item \textit{Remove customer:} For each visited customer's supply collection vertex the operator yields a path assignment in which the vertex is removed from the lorry's paths.
+
+  \item \textit{Insert trailer:} For each lorry that is not coupled to a trailer during its path and for each unused trailer the operator  yields a path assignment in which the trailer is inserted into the lorry's path. A trailer is inserted in a lorry's path by inserting the trailer's start and end vertex on the first position after the lorry's start vertex and the last position before the lorry's end vertex respectively.
+
+	\item \textit{Remove trailer:} For each used trailer the operator yields a path assignment in which the trailer is removed. A trailer is removed by removing all couple and decouple vertices visited by that trailer from  the lorries' paths, this includes the trailer's start and end vertex.
+
+  \item \textit{Insert consecutive pair:} For each position in the path of any lorry at which a trailer is pulled and for each transshipment location the operator yields a path assignment in which the vertices of a transshipment pair of that transshipment location are inserted consecutively at that position. This operator functions as an enabler of operators \textit{move customer} and  \textit{share trailer}.
+
+	\item \textit{Remove consecutive pair:} For each transshipment decouple vertex that is immediately followed by its paired couple vertex in any lorry's path, yield a path assignment in which those two vertices are removed from the lorry's path. This operator functions as a clean-up.
+
+	\item \textit{Remove lorry:} For each used lorry the operator yields a path assignment in which that lorry is removed. A lorry is removed by removing all vertices from the lorry's path except for its own start and end vertex and by removing any trailer that was pulled by the lorry.
+
+	\item \textit{Swap trailer:} For each used trailer and for each unused trailer the operator yields a path assignment in which the used trailer is swapped for the unused trailer. A trailer and an unused trailer are swapped by swapping the start and end vertices of the used trailer with the start and end vertices of the unused trailer.
+	\item \textit{Swap lorry:} For each used lorry and for each unused lorry the operator  yields a path assignment in which the used lorry is swapped with the unused lorry. An used and an unused lorry are swapped by moving all vertices of the used lorry's path except for its own start and vertex, to the unused lorry's path.
+	\item \textit{Share trailer:}
+  Let it be given that a lorry $k_1$ visits both the decouple
+  $i \in \mathcal R^- $
+  and couple vertex
+  $j \in \mathcal R^+ $
+  of a transshipment pair.
+  In that case there must have been a couple vertex
+  $ u \in \mathcal R^+ \cup \mathcal N^+$
+  that was a predecessor of $i$ in the path of lorry $k_1$ and a decouple vertex
+  $ v \in \mathcal R^- \cup \mathcal N^-$
+  that is a successor of $j$ in the path of lorry $k_1$.
+  The trailer can be shared with another lorry $k_2$ by moving vertices $u$ and $i$ to the path of lorry $k_2$ such that $u$ precedes $i$ and no other trailer is already pulled on that part of $k_2$'s path.  Alternatively, the trailer could have been shared by moving vertices $j$ and $v$ to the path of lorry $k_2$ such that $j$ precedes $v$ and no other trailer is already pulled on that part of $k_2$'s path.
+For each transhipment pair of which both vertices are visited by the same lorry $k$ and for each other lorry $k_2$  the operator yields a path assignments for both ways described above that $k$ and $k_2$ can share a trailer.
+  %
+  %
+  % The couple vertex that is a predecessor of the pair in the lorry's path can be moved together with the decouple vertex of the transshipment pair to another lorry. They must be positioned in the other lorry's path such that the couple vertex precedes the decouple vertex and such that there are no decouple or couple vertices between them.  This yields a path assignment in which the trailer is shared. Similarly, the couple vertex of the pair together with the decouple vertex that is a successor of the pair in the lorry's path can be moved to another lorry. This yields another path assignment.  This is done for all transshipment vertex pairs of which both vertices are visited by the same lorry and for all other lorries and all of the possible Sections of their paths on which they are currently not pulling a trailer.
+	% Lastly, filter out the path assignment if its precedence graph, described in Section \ref{sec:time}, has a cycle in it.
+
+  \item \textit{Merge lorries:} For each pair of lorries the operator  yields $nSamples \in \mathbb N$  path assignment in which the pair of lorries is merged. A pair of lorries is merged by first removing all trailers that were pulled by them. Then all of the supply collection vertices in their paths are moved in a random order to one of the the two lorries. A random trailer is inserted into that lorry's path and lastly transshipment vertices are inserted such that the  trailer is decoupled and coupled before and after every lorry customer at the nearest transshipment vertex pair .
+\end{itemize}
+
+
+%---------------------------------------------------------------------------------------------------------
+\subsection{Load Table}
+\label{sec:load}
+A load table
+$L$
+indicates how much load a vehicle is carrying whilst traversing an edge.
+Given a path assignment $(X,Y)$ that satisfies the hard constraints a related load table
+$L$
+can be constructed  that also satisfies the hard constraints.
+ The load table does not influence the costs of a solution.
+ It is  possible that for a path assignments that satisfies the soft constraints no related load table exists in which the whole supply of each customer is collected.
+ % that satisfies the soft constraints, i.e.,
+ % This is the case when at least one lorry does not have enough capacity to collect the supply of a customer it visits.
+In that case the load table violates a soft constraint and incurs penalty described in equation \eqref{pen:load}.
+\\
+
+We find a load table $L$ by modeling the problem as a maximum flow problem in a capacity graph.
+The capacity graph needs to model the capacities of the vehicles,
+the amount of supply of the customers,
+the flow of the customer supply from the customers to the lorries,
+whether and where load flows from lorries to trailers   and
+the flow of load from the vehicles to the depot.\\
+
+
+% Based on path assignment $(X,Y)$, let
+% $ V^{\rm used}  := \{ i \in \mathcal V: \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+% be the subset of vertices that is visited in path assignment $(X,Y)$,
+% let
+% $ E^{\rm used}  := \{ (i,j) \in E:\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+% be all the traversed eges in path assignment $(X,Y)$ and
+% let  $capacity : E^{\rm used} \rightarrow \mathbb{R}^+ $
+% be a mapping from the edges to their capacities.
+% \\
+
+
+
+% the following elements:
+% \begin{itemize}
+% \item The capacities of the vehicles.
+% \item The amount of supply of the customers.
+% \item The amount of supply which is able to flow from the customer's supply collection vertex to the visiting lorry.
+% \item The flow of load from the lorry to the trailer at each vertex that they visit together.
+% \item The flow of load from the lorry and the trailer to the depot.
+% \end{itemize}
+Let
+$\mathcal G^{\rm c} = ( \mathcal V^{\rm c},\mathcal E^{\rm c}, capacity)$
+be the capacity graph, where
+$\mathcal V^{\rm c}$
+is a set of vertices ,
+$\mathcal E^{\rm c}$
+is a set of edges
+and
+$capacity : \mathcal E^{\rm c} \rightarrow \mathbb{R}^+ $
+is a mapping from the edges to their capacities.\\
+
+%test
+The capacity graph $\mathcal G^{\rm c}$ contains all vertices of graph $\mathcal G$, i.e., $  \mathcal V \subset \mathcal V^{\rm c}$.
+%
+Let $\mathcal P$  be a set that contains one vertex for each trailer and such that $\mathcal P \cap \mathcal V = \emptyset $.
+The capacity graph contains
+for each trailer
+$l \in \mathcal F^{\rm trailer} $
+a vertex
+$p_l \in \mathcal P $
+to model the flow of load from a lorry to the trailer and from the trailer to the depot, i.e., $  \mathcal P \subset \mathcal V^{\rm c}$.
+See Figure~\ref{fig:flow_abstract} for an illustration of a capacity graph where set $\mathcal P$ contains only one element, the vertex named  P.
+%
+Let $source \in \mathcal V^{\rm c} $ be a source vertex that functions as a supersource for the supply of the customers.
+It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex S.
+Let $sink \in \mathcal V^{\rm c}$ be a sink vertex that functions as a supersink for  the load of the lorries and trailers.
+ It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex T. \\
+
+%end test
+
+% The following definitions are used to construct the set of vertices
+% $V^{\rm c}$,
+% the set of edges
+% $E^{\rm c}$
+% and the mapping
+% $capacity$ :\\
+
+
+%%%test 2: iterate over lorry's
+
+Each edge $ (u,v) \in \mathcal E$ that is traversed by a lorry $k \in \mathcal F^{\rm lorry}$ is also an edge in the capacity graph, i.e.,
+% \begin{align}
+  $ \{ (u,v) \in \mathcal E : \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,v} = 1 \} \subset \mathcal V^{\rm c} $,
+% \end{align}
+with a capacity  $capacity((u,v)) = f^{\rm capacity}_k$ equal to lorry $k$'s capacity  .
+\\
+
+
+
+% The capacity graph $\mathcal G^{\rm c}$ contains the all the  each lorry
+% $k \in \mathcal F^{\rm lorry}$
+% the vertices on its path are elements of the capacity graph
+% \begin{align}
+%   \{ i \in \mathcal V: \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} \subset V^{\rm c}
+% \end{align}
+% and the edges in its path are also in the capacity graph
+% \begin{align}
+%   \{ (i,j) \in E:\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \
+% \end{align}
+% Each visited vertex in a path assignment
+% $ v \in \{ i \in \mathcal V: \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+% is an element of the capacity graph
+% $ v \in  V^{\rm c}$.
+% .....
+% Each edge traversed by lorry
+% $k $
+% %%%% end test
+
+
+%
+% % \item
+% % The capacity graph needs to model the capacities of the vehicles,
+% Let
+% $ V^{\rm used}  := \{ i \in \mathcal V: \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+% be the subset of vertices that is visited in a path assignment,
+% let
+% $ E^{\rm used}  := \{ (i,j) \in E:\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+% be all the traversed edges in a path assignment.
+% % Each traversed edge
+% % $e \in E^{\rm used} $
+% % is traversed by a lorry
+% % $k \in \mathcal F^{\rm lorry}$
+% % that satisfies constraint
+% % $ x^k_e > 0  $.
+% The edges
+% $(i,j) \in E^{\rm used} $
+% have a capacity
+% $ capacity((i,j)) := f^{\rm capacity}_k$
+%   equal to the lorry $k$'s capacity.\\
+
+  %%%test
+  % Each visited vertex in a path assignment
+  % $ v \in \{ i \in \mathcal V: \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{i,j} = 1 \} $
+  % is an element of the capacity graph
+  % $ v \in  V^{\rm c}$.
+  % .....
+  % Each edge traversed by lorry
+  % $k $
+  %%%% end test
+
+
+
+% Let the capacity of each traversed edge
+% $e \in E^{\rm used} $
+% be the capacity of the lorry
+% $k \in \mathcal F^{\rm lorry} $
+% that traverses it, hence
+% $ capacity(e) := f^{\rm capacity}_k$
+% where lorry
+% $k \in \mathcal F^{\rm lorry}$
+%  satisfies constraint
+%  $ x^k_e > 0  $
+%----------------------
+% whether and where load flows from lorries to trailers   and
+
+% \item
+% Let $P$ be a set of vertices that consists of one vertex for each trailer. These vertices are defined such that we can define edges that model the flow from the trailer to the depot and such that we can define edges that model the flow at each vertex that   the trailer visits with a lorry from the lorry to the trailer.
+% \item
+% Let $ P^{\rm used} := \{ p_l \in P : \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} x^k_{n^+_l,j} = 1, \quad l \in \mathcal F^{\rm trailer} \} $
+% be the set of vertices used to model the load of the trailers used in path assignment $(X,Y)$. See Figure~\ref{fig:flow_abstract} for an illustration of a capacity graph with one lorry and one trailer. Note that in the figure the element $p_l$ is indicated with a vertex P.
+
+
+For each vertex
+$u \in \mathcal V$
+visited by a lorry and a trailer
+$l \in \mathcal F^{\rm trailer} $
+the capacity graph contains an edge
+$ (u, p_l), \ p_l \in \mathcal P  $
+with a capacity equal to the trailer's capacity
+$ capacity((u,p_l)) := f^{\rm capacity}_l$
+to model whether load was transfered to the trailer there, i.e.,
+$\{ (u,p_l):
+\sum_{v \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} + y^{k,l}_{v,u} > 0,
+u \in \mathcal V, p_l \in \mathcal P,  l \in \mathcal F^{\rm trailer} \} \subset \mathcal E^{\rm c}$. \\
+
+The capacity graph  contains an edge from the supersource
+$source$
+to each customer's supply collection vertex
+$s_i \in \mathcal S, i \in \mathcal L^{\rm customer }$ ,
+with a capacity
+$ capacity((source,s_i)) := locationSupply_{i} $
+equal to the customer's supply,
+i.e.,
+$ \{ (source,s_i): s_i \in \mathcal S\} \subset \mathcal E^{\rm c}$. \\
+
+The capacity graph  contains an edge  from the end of path vertex
+$m^-_k \in \mathcal M^-$
+of each lorry
+$ k \in \mathcal F^{\rm lorry}$
+to the supersink
+$sink$
+with a capacity
+$ capacity((m^-_k ,sink)) := f^{\rm capacity}_k $
+equal to the lorry's capacity,
+i.e.,
+$ \{ (m^-_k ,sink): k \in \mathcal F^{\rm lorry}  \} \subset \mathcal E^{\rm c}$. \\
+
+
+The capacity graph  contains an edge from the vertex
+$p_l \in \mathcal P$
+of each trailer
+$ l \in \mathcal F^{\rm trailer}$
+to the supersink
+$sink$
+with a capacity
+$ capacity((p_l ,sink)) := f^{\rm capacity}_l $
+equal to the trailer's capacity,
+i.e.,
+$ \{ (p_l ,sink): l \in \mathcal F^{\rm trailer}  \} \subset \mathcal E^{\rm c}$.\\
+
+% contains an edge from $i$ to the
+% Let
+% $ E^{\rm p} := \{ (i,p_l):
+% \sum_{j \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{i,j} + y^{k,l}_{j,i} > 0, $ \\ $
+% \quad i \in \mathcal V^{\rm used} \cap  \left( S^{\rm trailer} \cup R^+ \cup R^- \cup N^+ \cup N^- \right) , p_l \in P^{\rm used}, l \in \mathcal F^{\rm trailer} \} $,
+% be a set of edges, where edge $(i,p_l)$  models the potential for the transfer of load during the visit of vertex $i$ with trailer $l$. These edges are illustrated in  Figure~\ref{fig:flow_abstract} with the edges directed at vertex P.
+
+% \begin{itemize}
+% \begin{itemize}
+% \item Let
+% % $ C^{\rm p} := \{ f^{\rm capacity}_l :  (i,p_l) \in E^{\rm p}  \} $
+% % be the capacities of the set of edges $E^{\rm p}$ since the amount of load that can flow at any vertex from a lorry to a trailer can never be greater than the capacity of the trailer.
+% the edges
+% $(i,p_l) \in E^{\rm p} , \ p_l \in P^{\rm used}, \ l \in \mathcal F^{\rm trailer}$
+% have a capacity
+% $ capacity((i,p_l)) := f^{\rm capacity}_l$
+%   in the capacity graph equal to the trailer $l$'s capacity; the amount of load that can flow at any vertex from a lorry to a trailer can never be greater than the capacity of the trailer.\\
+% \item
+% % the amount of supply of the customers,
+% % the flow of the customer supply from the customers to the lorries.
+% Let $source$ be a source vertex that functions as a supersource for the supply of the customers. It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex S. The vertex  is introduced since a maximum flow problem needs a single source and a single sink.
+% \item Let
+% $ E^{\rm source} := \{ (source,j): j \in S\}  $
+% be the edges over which the customer's supply can flow from the supersource to the customer's supply collection vertex. They are  illustrated in  Figure~\ref{fig:flow_abstract} with the edges  directed away from the source.\\
+%
+%
+%
+%
+%
+% \item
+% %Let  the capacities $ C^{\rm source} := \{ locationSupply_{j^{\rm loc}} : (i,j) \in  E^{\rm source}   \} $
+% % model the amount of supply of the customers.
+% %%%%%%%%%%
+% Let the edges
+% $(i,j) \in  E^{\rm source}  $
+% have a capacity
+% $ capacity((i,j)) := locationSupply_{j^{\rm loc}} $
+% equal to the amount of supply of the customers.\\
+% \item
+% % the flow of load from the vehicles to the depot.
+% Let $sink$ be a sink vertex that functions as a supersink for  the load of the lorries and trailers. It models the depot. It is indicated  with a vertex T in  Figure~\ref{fig:flow_abstract} .
+% \item
+% Let
+% $ E^{\rm sink-lorry} := \{ (i,sink):  i \in  \left( M^- \cap V^{\rm used}  \right)  \}  $
+% be the edges over which the lorries' load can flow from the paths' end vertices to the supersink. These edges are indicated in  Figure~\ref{fig:flow_abstract}  with the directed edges from  the lorry's end of path vertex B to the vertex T.
+% % Let the edges
+% % $(i,j) \in  E^{\rm source}  $
+% % have a capacity
+% % $ capacity((i,j)) := locationSupply_{j^{\rm loc}} $
+% % equal to the amount of supply of the customers.\\
+% \item
+% Let
+% $ E^{\rm sink-trailer} := \{ (i,sink): i \in P^{\rm used}   \}  $
+% be the edges over which the trailers' load can flow from the trailers  to the supersink. These are indicated in  Figure~\ref{fig:flow_abstract}  with the directed edges from the vertex P to vertex T.
+% % Let the edges
+% % $(i,j) \in  E^{\rm source}  $
+% % have a capacity
+% % $ capacity((i,j)) := locationSupply_{j^{\rm loc}} $
+% % equal to the amount of supply of the customers.\\
+% \item
+% Let  $ C^{\rm sink-lorry} := \{ f^{\rm capacity}_k : (m^+_k,sink) \in  E^{\rm sink-lorry} ,k \in \mathcal F \} $  and
+% $ C^{\rm sink-trailer} := \{ f^{\rm capacity}_l : (p_l,sink) \in  E^{\rm sink-trailer}  , l \in \mathcal F^{\rm trailer}  \} $
+% be the capacities of of the set of edges $E^{\rm sink-trailer}$.
+% \item
+% % construct graph from sets
+% Let
+% $V^{\rm c} := V^{\rm used} \cup P^{\rm used} \cup \{ source , sink  \} $ be the set of all vertices used in the capacity graph.
+% \item Let
+% $E^{\rm c} :=  E^{\rm used} \cup E^{\rm p} \cup E^{\rm source} \cup   E^{\rm sink-lorry} \cup E^{\rm sink-trailer}  $  be the set of all edges used in the capacity graph.
+% \item Let   $C^{\rm c} :=  C^{\rm used} \cup C^{\rm p} \cup C^{\rm source} \cup   C^{\rm sink-lorry} \cup C^{\rm sink-trailer}   $
+% be the capacities of the set of edges $E^{\rm c}$ .
+% \end{itemize}
+
+% Now  $\mathcal G^{\rm c} = ( \mathcal V^{\rm c},\mathcal E^{\rm c}, capacity)$ is the capacity graph that models the potential flow of the customers' supply from the supply collection vertices through the vehicles to the depot.
+A feasible solution to the maximum flow problem   from source
+$source$
+to sink
+$sink$
+on capacity graph
+$ \mathcal G^{\rm c}$
+is a mapping
+$ f^{\rm c}: \mathcal E^{\rm c} \rightarrow \mathbb{R}^+_0$
+representing the flow on each edge
+$(u,v) \in \mathcal E^{\rm c}$.
+% For edges that are not in the capacity graph $f^{\rm c}((i,j)) = 0, (i,j) \nin \mathcal E^{\rm c}$ maps to zero.
+Let
+$|f^{\rm c}| = \sum_{v \in \mathcal V^{\rm c}} f^{\rm c}(source, v)$
+be the total amount of flow from the source vertex, which is equal to the amount of supply that was collected from the customers and unloaded at the depot.
+
+Load table $L$ can be constructed from $f^{\rm c}$.
+We need the load of each vehicle on each traversed edge. The values concerning the load of the lorries are simply,
+% Let path $PATH(k)$ of lorry $k \in \mathcal F^{\rm lorry}$ be the simple path in $G$ from $m^+_k $ to $m^-_k$.  \\
+\begin{align}
+	\label{eq:lorry_load}
+	z^{k}_{u,v} =
+	x^k_{u,v} \cdot f^{\rm c}((u,v)) ,  \quad u,v \in \mathcal V,
+   k \in \mathcal F^{\rm lorry}. \notag
+\end{align}
+
+The loads of the trailers need to be identified using another method.
+The  amount of load that is transfered from a lorry to a trailer
+ $l \in \mathcal F^{\rm trailer}$
+ that visit vertex $v \in \mathcal V^{\rm c}$ together, is equal to
+ $f^{\rm c}((v,p_l))$.
+% The flow does not indicate the amount of load that the trailer arrives with at $i$ .
+To calculate the load of a trailer $l$ when departing from a vertex $v$,
+we need to know the flow of load $f^{\rm c}(v,p_l)$ to trailer $l$ at vertex $v$ and the flow of load to trailer $l$ at all vertices it visited previous to $v$.  \\
+% Therefore we need to know the amounts that has flown towards the trailer before visiting $i$.  and the amount of l we need to know the sequence in which the trailer visits the vertices, i.e.,its path.  \\
+
+% Let the path of a trailer $PATH(k), \ k \in \mathcal F^{\rm trailer}$ be the edges that it traverses whilst being pulled by a trailer plus the edges between a decouple and couple vertex pair if the trailer is decoupled at a transshipment locations.
+% \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+% We construct the trailer by connecting the
+% To know what the load of a trailer $ z^k_{i,j}, \quad (i,j) \in E, k\in \mathcal F^{\rm trailer}  $  we need to sum the flow $f^{\rm c} (i, ) $is on the edges in its path, we need to construct the trailer's path $PATH(k)$ by  traverse the trailer's path and accumulate the load that flows from the visited vertices to the trailer's cargo vertex.
+The sequence in which trailer $l$ visited vertices needs to be determined.
+% \begin{itemize}
+% \item
+% Let
+% $\mathcal E^{\rm pairs} = \{  (r^{j,-}_i,r^{j,+}_i ) : r^{j,-}_i \in \mathcal R^- , r^{j,+}_i \in \mathcal R^+, i \in \{ 1,\ldots, \eta \},  j \in \mathcal L^{\rm transshipment}   \}$
+% be the set of edges between all the decouple and couple vertex pairs of transshipment locations.
+Let
+$\mathcal E^{\rm used-trailer} = \{ (u,v) \in \mathcal E : \sum_{k \in \mathcal F^{\rm lorry}} \sum_{l \in \mathcal F^{\rm trailer}} y^{k,l}_{u,v} = 1  \} $ be the set of edges traversed by a trailer and a lorry.
+Let
+$\mathcal G^{\rm trailer} = (\mathcal V, \mathcal E^{\rm pairs} \cup \mathcal  E^{\rm used-trailer}  ) $ be a graph that can be used to determine the order in which trailers visit vertices . \\
+% \end{itemize}
+
+Let  the trailer path $trailerPath_l$ of trailer
+$l \in \mathcal F^{\rm trailer}$
+be the simple path in
+$\mathcal  G^{\rm trailer}$ from $n^+_l $ to $n^-_l $.
+The order of the vertices on the path can be used to determine the total amount of load that has flown from lorries to trailer $l$ at and before visiting vertex $u$, namely
+$ \sum_{v \in trailerPath_l}^u f^{\rm c}((v, p_l)) $.\\
+
+% This path can be denoted as a sequence of edges
+% $ PATH(h) := \{ (u_1,v_1), \ldots , (u_{|PATH(h)|}, v_{|PATH(h)|})$.
+% The sequence of the vertices on the path can be used to determine the total amount of load that has flown from lorries to trailer $h$ for each vertex visited by the trailer.
+% Let $f^{\rm c}$ map edges that are not in the capacity graph to zero.
+The values of load table  $L$  can thus be determined as,
+\begin{align}
+	z^k_{u,v} = \begin{cases}
+  %%%%%%%%%%%%%%%%%
+  \sum_{h \in \mathcal F^{\rm lorry} } y^{h,k}_{u,v} \cdot
+  \sum_{v \in trailerPath_k}^u f^{\rm c}((v, p_h)),
+  &   \text{ if }
+   k \in \mathcal F^{\rm trailer},  \\
+  %%%%%%%%%%%%%%%%%%%%
+	x^k_{u,v} \cdot f^{\rm c}((u,v)) ,  & \text{ if } k \in \mathcal F^{\rm lorry},
+	% 0, & \text{ otherwise },
+	\end{cases}
+	\quad u,v \in \mathcal V, k \in \mathcal F
+\end{align}
+
+If path assignment $(X,Y)$ satisfies the hard constraints this procedure yields a related load table  $L$  that also satisfies the hard constraints.
+% We have now also set nonzero load on edges that between transshipment vertex pairs, which are not traversed by a lorry. Therefore we set the values of those edges back to zero.
+%
+%
+% The values of $L$ concerning the load of trailers can be calculated using the the following relation:
+%
+% The load $z^k_{j,u}$ of trailer $k$ on edge $(j,u)$
+% if edge $(i,j)$ is the edge preceding $(j,u)$ in $PATH(k)$ then $z^k_{j,u} = z^k_{i,j} +  $
+% For
+% $$ z^k_{i,j} = (i,j) \in PATH(k), k\in \mathcal F^{\rm trailer} $$ \todo{I'm wrestling with declarative definitions vs imperative definitions. Is this definition okay?}
+%
+%
+% \begin{align}
+% 	z^{k,}_{i,j} = \begin{cases}
+% 	f^{\rm c}((n^+_k, p_k)) , & \text{ if } i = n^+_k
+% 	f^{\rm c}((i, p_k)) + \sum_{u \in \mathcal V} z^{k}_{u,i} , & \text{ if } i = ,
+% \end{cases}
+% \quad k \in \mathcal F^{\rm trailer}
+% \end{align}
+%
+%
+% Let $y'_{i,j} = \sum_{k \in \mathcal F^{\rm lorry}} \sum_{l \in \mathcal F^{\rm trailer}} y^{k,l}_{i,j}, \quad (i,j) \in E$ model the edges traversed by any trailer with any lorry. If now we add the set of edges connecting the
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Initially we construct $L'$ as follows
+% To construct $L$ we first set all values to zero
+%  $z^k_{i,j} = 0, i,j \in \mathcal V, k \in \mathcal F$.
+%  Then for all edges in the paths of the lorries the values ar
+% Say we have the paths of the lorries. if $ x^k_ij = 1$ then $ z^k_{i,j} = f^{\rm c}((i,j))$. \\
+%
+% Let  $E^{\rm pairs} = \{  (r^{j,-}_i,r^{j,+}_i ) : i \in \{ 1,\ldots, \eta \},  j \in \mathcal L^{\rm transshipment}   \}$
+% be the set of edges between all the decouple and couple vertex pairs of transshipment locations.
+% construct new graph Y' where
+% \begin{align}
+% 	y^{k,l}_{i,j} = \begin{cases}
+% 	1 , & \text{ if } i =
+% \end{cases}
+% \end{align}
+%
+%
+% So say we have a new graph Y' whcih is Y where all
+% For
+% \begin{align}
+% 	l^k_{i,j}
+% \end{align}
+%
+%
+% Now l^k){i,j}
+
+
+
+% ---------------------------------------------------------------------------------------------------------
+\subsection{Time Table   }
+
+\label{sec:time}
+
+A time table $T$ indicates at what time a lorry finishes traversing an edge.
+From a path assignment $(X,Y)$ that satisfies the hard constraints we can construct a related
+time table $T$ that also satisfies the hard constraints.
+We want to construct a related time table $T$ with four goals in mind.
+First, the time table should not break  the time related hard constraints \eqref{eq:time-hard-first} - \eqref{eq:time-hard-last}.
+Second, the time table  must satisfy the time related soft constraint \eqref{eq:time-window} if possible, i.e.,
+each vertex visit should end before the ending of the vertex's time window.
+% no vertex visit should end after the ending of the vertex's time window.
+If this soft constraint is not satisfied by the time table the penalty described in \eqref{pen:time} will be incurred.
+Third, if violating a time window is unavoidable, the violation should be as small as possible.
+Fourth, the time table should be such that the time related costs are as small as possible.
+\\
+
+
+
+
+
+
+
+We find a time table $T$ related to path assignment $(X,Y)$ by first calculating the earliest time at which the lorries can arrive at the vertices on their paths without breaking any vertex' opening time.
+We mark the vertices at which the lorries end their paths and the vertices that already have their closing time violated.
+Then we calculate the latest time at which the lorries can start their paths and arrive at the vertices in their paths
+whilst arriving at the earliest arrival time at the marked vertices
+% without delaying the arrival time at the marked vertices
+and without violating any unmarked vertex' closing time.
+These latest path start times are used as the start times of the lorries in the time table.
+The time table is then build up according to two rules.
+First, lorries start the visit of a vertex as soon as they arrive or as soon as the vertex opens, whichever happens the latest.
+Second, if a vertex visit is finished the lorry depart immediately towards the next vertex.\\
+
+
+% \subsubsection{Earliest Arrival}
+% We calculate the earliest time at which lorries can arrive at the vertices in their paths by casting the problem as a longest path problem in a precedence graph
+% $\mathcal G^{\rm earliest} = (\mathcal V^{\rm precedence},\mathcal E^{\rm earliest} , duration^{\rm earliest})$, where
+% $\mathcal V^{\rm precedence}$
+% is a set of vertices,
+% $\mathcal E^{\rm earliest}$
+% is a set of edges and
+% $duration^{\rm earliest}:\mathcal E^{\rm earliest} \rightarrow \mathbb R^+_0$
+% is a mapping from
+% the edges  $\mathcal E^{\rm earliest}$ to their weights, which represent durations. \\
+%
+%
+% The precedence graph
+% $\mathcal G^{\rm earliest} $
+% needs to model
+% the opening times of vertices,
+% % the travel times between vertices,
+% the durations of vertex visits,
+% % the time horizon,
+% The precedence relations that the vertices in a lorry's path have with respect to each other,
+% the amount of time it takes the lorry with or without trailer to travel between the vertices in the lorry's path
+% and
+% % the precedence that vertices have over their successors on a lorry's path with the correct amount of travel time depending whether the  it takes to traverse
+% % and
+% the precedence a decouple vertex of a transshipment vertex pair has over the couple vertex it is paired with. \\
+%
+%
+%
+% %________RELEVANT TILL..  _________________
+% % TODO latest
+% % Let
+% % $\mathcal G^{\rm latest} = (\mathcal V^{\rm precedence},\mathcal E^{\rm latest} , duration^{\rm latest})$
+% % be the precedence graph that is subsequently used to calculate latest departure times, where
+% % $\mathcal E^{\rm latest}$
+% % is a set of edges and
+% % $duration^{\rm latest}:\mathcal E^{\rm latest} \rightarrow \mathbb R^+_0$
+% % is a mapping from
+% % the edges $\mathcal E^{\rm latest}$  to their weights, which represent durations. \\
+%
+%
+% % The last element that needs to be modeled is the duration of a vertex visit.
+% % Since durations of vertex visits can't be expressed in precedence graphs, every vertex is assigned a start of visit and an end of visit vertex such that the duration of the visit can be modeled using the weight of the directed edge  between them.
+% % Then we can use a single-source, all-destinations  longest path algorithm to find the earliest arrival times for all the vertices on the lorries' paths.
+%
+% %
+% % In case we consider the VRPTTMU, it may be possible to further reduce the time-dependent costs of the trailers whilst satisfying the hard and the soft constraints. Developing such a procedure is outside the scope of this thesis. When considering the VRPTT, the trailers' path durations are minimized by minimizing the durations of the lorries' paths. \\
+% % _________ ..TILL HERE___________________________________
+%
+%
+% % These goals are pursued in two steps. First  the earliest arrival time is calculated for each vertex in the lorries' paths whilst satisfying the visit durations, the travel times, the start of the time windows and the precedence of decoupling a trailer over coupling the trailer at a transshipment vertex pair. No time table that satisfies the soft constraints given path assignment $(X,Y)$ exists if based on these earliest arrival times the end of a vertex's time window is violated. \\
+%
+% %
+% % We find a time table $T$ by modeling the problem as a shortest path problem in a precedence graph. The precedence graph needs to model the travel times of the vehicles, the service times of the the vertices, the precedence of a vertex pair's decouple vertex over the couple vertex ....
+%
+% % - start of time horizon and end of time horizon.
+% % forward search and backward search. 2 pass method. forward pass, backward pass. in backward pass, earliest arrival times at lorry end path vertex and any vertex where deadline is violated is frozen. \\
+% %%%%%%%%%%
+%
+%
+% % This precedence graph  contains the precedence relations caused by the paths of the lorries as directed edges with the travel times as edge weights.
+% % Edges between a supersource and the vertices, with weights equal to the vertex windows' start times  model the start of the time windows.
+% % The precedence of a decouple vertex over a couple vertex within a transshipment vertex pair is modeled with a directed edge from the decouple vertex to the couple vertex with zero edge weight.
+% % The last element that needs to be modeled is the duration of a vertex visit.
+% % Since durations of vertex visits can't be expressed in precedence graphs, every vertex is assigned a start of visit and an end of visit vertex such that the duration of the visit can be modeled using the weight of the directed edge  between them.
+% % Then we can use a single-source, all-destinations  longest path algorithm to find the earliest arrival time of the lorries at the vertices in their paths and thus conclude the first step.
+% % \\
+% %%%%%%%%%%%%%%
+%
+%
+% %
+% % To execute the first step we need to construct a precedence graph.
+% % This precedence graph  contains the precedence relations caused by the paths of the lorries as directed edges with the travel times as edge weights.  Edges between a supersource and the vertices, with weights equal to the vertex windows' start times  model the start of the time windows.
+% % The precedence of a decouple vertex over a couple vertex within a transshipment vertex pair is modeled with a directed edge from the decouple vertex to the couple vertex with zero edge weight.
+% % The last element that needs to be modeled is the duration of a vertex visit.
+% % Since durations of vertex visits can't be expressed in precedence graphs, every vertex is assigned a start of visit and an end of visit vertex such that the duration of the visit can be modeled using the weight of the directed edge  between them.
+% % Then we can use a single-source, all-destinations  longest path algorithm to find the earliest arrival times for all the vertices on the lorries' paths.
+% % % of the lorries at the vertices in their paths and thus conclude the first step.
+% % \\
+%
+% % Let
+% % $V^{\rm start},V^{\rm end}$
+% % be the set of start of visit and end of visit vertices respectively.
+% % Let
+% % $E^{\rm visit} , C^{\rm visit}$
+% % be the set of edges connecting the start of visit vertices with their corresponding end of visit vertices and the set their edge weights respectively.
+% % Let
+% % $source,sink $
+% % be the supersource and supersink vertex respectively.
+% % Let
+% % $E^{\rm window-start}, E^{\rm window-end}$ be the set of edges that ensure the start time and end time respectively of the vertex time windows and let the sets
+% % $C^{\rm window-start}, C^{\rm window-end}$ be their corresponding edge weights.\\
+%
+% % Each visited vertex
+% % $u \in \mathcal V^{\rm used}$
+% % has a lorry
+% % $k \in \mathcal F^{\rm lorry}: \sum_{j \in \mathcal V} x^k_{u,j} + x^k_{j,u} > 0,  $
+% % which it is visited by,
+% % a start of visit vertex
+% % $v^{\rm start}_u \in \mathcal V^{\rm start}$,
+% % an end of visit vertex
+% % $v^{\rm end}_u \in \mathcal V^{\rm end}$ ,
+% % an edge that models the precedence relation between the start and the end of the visit
+% % $(v^{\rm start}_u, v^{\rm end}_u) \in E^{\rm visit} $,
+% % and a corresponding edge weight that models the duration of the visit
+% % $\tau^{\rm visit}_{u,k} \in C^{\rm visit} $,
+% % an edge that models the interval before the start of its time window
+% % $(source,v^{\rm start}_u) \in E^{\rm window-start} $
+% % and the corresponding edge weight
+% % $ \tau^{\rm start}_u  \in C^{\rm window-start}  $ \\
+% %
+% % Each traversed edge
+% % $(i,j) \in E^{\rm used}$
+% % has an edge that models the travel time
+% % $(v^{\rm end}_i, v^{\rm start}_j) \in FIXME$
+% % and a corresponding weight
+% % $\tau^{\rm travel}_{i,j,k} \in FIXME$.\\
+% %
+% % Each used transshipment decouple vertex
+% % $r^{j,-}_i \in \mathcal V^{\rm used} \cap R^-, i \in \{ 1,\ldots,\eta \}, j \in \mathcal L^{\rm transshipment}$
+% % has precedence over the couple vertex it is paired with
+% % $ (v^{\rm end}_{r^{j,-}_i },v^{\rm end}_{r^{j,+}_i } ) \in FIXME $
+% % and zero edge weight, since the only thing that is modeled is precedence, not precedence with a certain amount of time
+% % $ 0 \in FIXME $
+% % .\\
+%
+%
+% % Let
+% % $V^{\rm step-one},E^{\rm step-one} , C^{\rm step-one}$
+% % be the set of vertices, edges and edge weights respectively that make up the precedence graph in the first step that is used to calculate the earliest arrival times of the lorries at the vertices in their paths.
+%
+%
+% % The last element that needs to be modeled is the duration of a vertex visit.
+% % Since durations of vertex visits can't be expressed in precedence graphs, every vertex is assigned a start of visit and an end of visit vertex such that the duration of the visit can be modeled using the weight of the directed edge  between them.
+% % Then we can use a single-source, all-destinations  longest path algorithm to find the earliest arrival times for all the vertices on the lorries' paths.
+% Since we need to model the duration of a vertex visit, but vertices in a precedence graph do not have weights, we need to employ a trick.
+% For each vertex $v \in \mathcal V$ let
+% $v^{\rm start}$
+% be a vertex that represents the start of $v$'s  visitation
+% and let
+% $v^{\rm end}$
+% be a vertex that represents the end of $v$'s  visitation.
+% The duration of $v$'s visit can then be modeled with the weight of edge
+% $(v^{\rm start},v^{\rm end})$.
+% Let
+% $\mathcal V^{\rm start} = \{  v^{\rm start} : v \in \mathcal V \} $
+% be the set of visitation start vertices
+% and let
+% $\mathcal V^{\rm end} = \{  v^{\rm end} : v \in \mathcal V \} $
+% be the set of visitation end vertices.
+% Let
+% $source,sink $
+% be the supersource and supersink vertex respectively.
+% Then let
+% $\mathcal V^{\rm precedence} :=
+% \mathcal V^{\rm start}
+% \cup
+% \mathcal V^{\rm end}
+% \cup
+% \{source,sink\}$.\\
+%
+%
+% %___________ v construction from LT ___________________
+% % The precedence graph
+% % $\mathcal G^{\rm earliest}$
+% % contains all vertices of graph
+% % $\mathcal G$,
+% % i.e.,
+% % $  \mathcal V \subset \mathcal V^{\rm c}$.
+% % %
+% % Let $\mathcal P$  be a set that contains one vertex for each trailer and such that $\mathcal P \cap \mathcal V = \emptyset $.
+% % The capacity graph contains
+% % for each trailer
+% % $l \in \mathcal F^{\rm trailer} $
+% % a vertex
+% % $p_l \in \mathcal P $
+% % to model the flow of load from a lorry to the trailer and from the trailer to the depot, i.e., $  \mathcal P \subset \mathcal V^{\rm c}$.
+% % See Figure~\ref{fig:flow_abstract} for an illustration of a capacity graph where set $\mathcal P$ contains only one element, the vertex named  P.
+% % %
+% % Let $source \in \mathcal V^{\rm c} $ be a source vertex that functions as a supersource for the supply of the customers.
+% % It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex S.
+% % Let $sink \in \mathcal V^{\rm c}$ be a sink vertex that functions as a supersink for  the load of the lorries and trailers.
+% %  It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex T. \\
+% %___________ v construction from LT till here ___________________
+%
+%
+%
+%
+%
+% %____ vertex set done. Now earliest edge set and duration function____________
+% % Now we build up the set edges $\mathcal E^{\rm earliest } $ and the edge weight mapping $ duration^{\rm earliest } $.\\
+%
+% % For each vertex $v$ visited by lorry $k$, i.e.,for each
+% %  $(v,k) \in  \{ (v',k') :
+% % \sum_{w \in \mathcal V} x^{k'}_{v',w} + x^{k'}_{w,v'} > 0,
+% % \ v' \in \mathcal V,
+% % \ k' \in \mathcal F^{\rm lorry} \}$,
+% % the following holds:
+% % \begin{itemize}
+% %   \item Edge
+% %   $(v^{\rm start},v^{\rm end}) \in \mathcal E^{\rm earliest}$
+% %   with edge weight
+% %   $duration^{\rm earliest}((v^{\rm start},v^{\rm end})) := \tau^{\rm duration}_{v,k}$.
+% %   \item Edge
+% %   $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+% %   with edge weight
+% %     $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v $.
+% % \end{itemize}
+%
+% For each vertex $v$ visited by lorry $k$, i.e.,for each
+%  $(v,k) \in  \{ (v',k') :
+% \sum_{w \in \mathcal V} x^{k'}_{v',w} + x^{k'}_{w,v'} > 0,
+% \ v' \in \mathcal V,
+% \ k' \in \mathcal F^{\rm lorry} \}$,
+% the following holds:
+% \begin{itemize}
+%   \item
+%   $(v^{\rm start},v^{\rm end}) \in \mathcal E^{\rm earliest}$
+%   with edge weight
+%   $duration^{\rm earliest}((v^{\rm start},v^{\rm end})) := \tau^{\rm duration}_{v,k}$.
+%   \item
+%   $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+%   with edge weight
+%     $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v $.
+% \end{itemize}
+%
+% For each edge $(u,v)$ traversed by lorry $k$, i.e.,for each
+%  $(u,v,k) \in  \{ (u',v',k') : x^{k'}_{u',v'} = 1,
+% \ u',v' \in \mathcal V,
+% \ k' \in \mathcal F^{\rm lorry} \}$,
+% the following holds:
+% \begin{itemize}
+%   \item
+%   $(u,v) \in \mathcal E^{\rm earliest}$
+%   with edge weight
+%   $duration^{\rm earliest}((u,v)) := travelTime(u,v,X,Y)$.
+%   % \item Edge
+%   % $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+%   % with edge weight
+%   %   $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v $.
+% \end{itemize}
+%
+%
+% % there is an edge
+% %   $(u,v) \in \mathcal E^{\rm earliest}$
+% %   with edge weight
+% %   $duration^{\rm earliest}((u,v)) := travelTime(u,v,X,Y)$.
+% %
+% For each transshipment vertex pair $(u,v) \in \mathcal E^{\rm pairs}$,
+% the following holds:
+% \begin{itemize}
+%   \item
+%     $(u^{\rm end},v^{\rm start}) \in \mathcal E^{\rm earliest}$
+%     with edge weight
+%     $duration^{\rm earliest}((u^{\rm end},v^{\rm start})) := 0$.
+%   % \item Edge
+%   % $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+%   % with edge weight
+%   %   $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v $.
+% \end{itemize}
+%
+%
+% % there is an edge
+% %   $(u^{\rm end},v^{\rm start}) \in \mathcal E^{\rm earliest}$
+% %   with edge weight
+% %   $duration^{\rm earliest}((u^{\rm end},v^{\rm start})) := 0$. \\
+% % traversed by lorry $k$, i.e.,for each
+% %  $(u,v,k) \in  \{ (u',v',k') : x^{k'}_{u',v'} = 1,
+% % \ u',v' \in \mathcal V,
+% % \ k' \in \mathcal F^{\rm lorry} \}$,
+% % the following holds:
+% % \begin{itemize}
+% %   \item Edge
+% %   $(u^{\rm end},v) \in \mathcal E^{\rm earliest}$
+% %   with edge weight
+% %   $duration^{\rm earliest}((u,v)) := travelTime(u,v,X,Y)$.
+% %   % \item Edge
+% %   % $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+% %   % with edge weight
+% %   %   $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v $.
+% % \end{itemize}
+% %%%%%%%%%5HHHHHHHEEEEEERRRREEEEEEEEEEE%%
+%
+%
+%
+%
+%
+%
+%
+% %
+% % For each visited vertex v:
+% %  edge $(v^{\rm start},v^{\rm end}) \in \mathcal E^{\rm earliest}$ by lorry $k$ thus with weight
+% % $duration^{\rm earliest}((u,v)) := travelTime(u,v,X,Y)$
+% % \\
+% %
+% % For each traversed edge (u,v):
+% %  edge $(u,v) \in \mathcal E^{\rm earliest}$ with weight
+% % $duration^{\rm earliest}((v^{\rm start},v^{\rm end})) := \tau^{\rm duration}_{u,v,k}$
+% % \\
+%
+%
+%
+%
+%
+%
+% % For each vertex
+% % $u \in \mathcal V$
+% % that has a pre
+% %
+% % is visited by the lorry
+% % $k  \in \mathcal F^{\rm lorry} $
+% % that satisfies the constraint
+% %  $ \sum_{j \in \mathcal V} x^k_{u,j} + x^k_{j,u} > 0  $.
+% %
+% % has an edge tha  st models the precedence relation between the start and the end of the visit
+% % $(v^{\rm start}_u, v^{\rm end}_u) \in E^{\rm step-one} $
+% % and has a corresponding edge weight that models the duration of the visit
+% % $\tau^{\rm visit}_{u,k} \in C^{\rm step-one} $.
+% %
+% % has an edge that models the interval before the start of its time window
+% % $(source,v^{\rm start}_u) \in E^{\rm step-one} $
+% % and the corresponding edge weight
+% % $ \tau^{\rm start}_u  \in C^{\rm step-one}  $.
+%
+%
+%
+%
+% % Each visited vertex
+% % $u \in \mathcal V^{\rm used}$
+% % in path assignment $(X,Y)$:
+% % \begin{itemize}
+% % \item
+% % is visited by the lorry
+% % $k  \in \mathcal F^{\rm lorry} $
+% % that satisfies the constraint
+% %  $ \sum_{j \in \mathcal V} x^k_{u,j} + x^k_{j,u} > 0  $.
+% % \item
+% % has a start of visit vertex
+% % $v^{\rm start}_u \in \mathcal V^{\rm step-one}$.
+% % \item
+% % has an end of visit vertex
+% % $v^{\rm end}_u \in \mathcal V^{\rm step-one}$.
+% % \item
+% % has an edge that models the precedence relation between the start and the end of the visit
+% % $(v^{\rm start}_u, v^{\rm end}_u) \in E^{\rm step-one} $
+% % and has a corresponding edge weight that models the duration of the visit
+% % $\tau^{\rm visit}_{u,k} \in C^{\rm step-one} $.
+% % \item
+% % has an edge that models the interval before the start of its time window
+% % $(source,v^{\rm start}_u) \in E^{\rm step-one} $
+% % and the corresponding edge weight
+% % $ \tau^{\rm start}_u  \in C^{\rm step-one}  $.
+% % \end{itemize}
+%
+%
+%
+%
+%
+%
+%
+%
+% % TODO
+% % an edge that models the precedence of the end of a visit over the supersink vertex
+% % $(v^{\rm end}_u, sink,) \in E^{\rm step-one} $,
+% % and the corresponding edge weight
+% % $0  \in C^{\rm step-one}  $
+%
+% % Futhermore, each traversed edge
+% % $(i,j) \in E^{\rm used}$
+% % has an edge that models the travel time
+% % $(v^{\rm end}_i, v^{\rm start}_j) \in E^{\rm step-one}$
+% % with a corresponding weight
+% % $\tau^{\rm travel}_{i,j,k} \in C^{\rm step-one} $. \\
+%
+% % Each used transshipment decouple vertex
+% % $r^{j,-}_i \in \mathcal V^{\rm used} \cap R^-, i \in \{ 1,\ldots,\eta \}, j \in \mathcal L^{\rm transshipment}$
+% % has an edge that models its precedence over the couple vertex it is paired with
+% % $ (v^{\rm end}_{r^{j,-}_i },v^{\rm start}_{r^{j,+}_i } ) \in E^{\rm step-one} $
+% % which has zero edge weight
+% % $ 0 \in C^{\rm step-one} $. \\
+%
+%
+% Now we can solve a  longest path problem on precedence graph
+% $G^{\rm earliest}$
+% which yields a mapping
+% $f^{\rm earliest}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+% that returns the longest path in $G^{\rm earliest}$ from $u$ to $v$ for  $u,v \in \mathcal V^{\rm precedence}$ . \\
+% %
+% % $f^{\rm earliest}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+% % that maps a  pair of vertices to the longest path between them in
+% %
+% % that returns the longest path between two vertices in $G^{\rm earliest}$.
+% %  takes two vertices $u,v$ from the
+% % $G^{\rm earliest} = (V^{\rm step-one},E^{\rm step-one},C^{\rm step-one})$ which results in a mapping $f^{\rm step-one}: V^{\rm step-one} \rightarrow \mathbb{R}^+_0$ from vertices to arrival times.
+% % Let
+% % $\tau^{\rm step-one-max} :=  \max_{v \in \mathcal V^{\rm step-one} }f^{\rm step-one}(v)$
+% % be the time at which the latest lorry ends its path.   \\
+% %
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+\subsubsection{Earliest Arrival}
+
+We calculate the earliest time at which lorries can arrive at the vertices in their paths by casting the problem as a longest path problem in a precedence graph
+$\mathcal G^{\rm earliest} = (\mathcal V^{\rm precedence},\mathcal E^{\rm earliest} , duration^{\rm earliest})$, where
+$\mathcal V^{\rm precedence}$
+is a set of vertices,
+$\mathcal E^{\rm earliest}$
+is a set of edges and
+$duration^{\rm earliest}:\mathcal E^{\rm earliest} \rightarrow \mathbb R^+_0$
+is a mapping from
+the edges  $\mathcal E^{\rm earliest}$ to their weights, which represent durations. \\
+
+
+The precedence graph
+$\mathcal G^{\rm earliest} $
+needs to model the following constraints:
+\begin{enumerate}
+  \item The opening times of vertices.
+  \item The durations of vertex visits.
+  \item The order in which a lorry visits vertices according to its path with the appropriate travel times.
+  \item The precedence a decouple vertex of a transshipment vertex pair has over the couple vertex it is paired with.
+\end{enumerate}
+
+
+Since we need to model the duration of a vertex visit, but vertices in a precedence graph do not have weights, we need to employ a trick.
+For each vertex $v \in \mathcal V$ let
+$v^{\rm start}$
+be a vertex that represents the start of $v$'s  visitation
+and let
+$v^{\rm end}$
+be a vertex that represents the end of $v$'s  visitation.
+The duration of $v$'s visit can then be modeled with the weight of edge
+$(v^{\rm start},v^{\rm end})$.
+Let
+$\mathcal V^{\rm start} = \{  v^{\rm start} : v \in \mathcal V \} $
+be the set of visitation start vertices
+and let
+$\mathcal V^{\rm end} = \{  v^{\rm end} : v \in \mathcal V \} $
+be the set of visitation end vertices.
+Let
+$source,sink $
+be the supersource and supersink vertex respectively.
+Then let
+$\mathcal V^{\rm precedence} :=
+\mathcal V^{\rm start}
+\cup
+\mathcal V^{\rm end}
+\cup
+\{source,sink\}$.\\
+
+
+For each vertex $v$ visited by lorry $k$, i.e.,for each
+ $(v,k) \in  \{ (v',k') :
+\sum_{w \in \mathcal V} x^{k'}_{v',w} + x^{k'}_{w,v'} > 0,
+\ v' \in \mathcal V,
+\ k' \in \mathcal F^{\rm lorry} \}$,
+the following holds:
+\begin{itemize}
+  \item
+  $(source,v^{\rm start})  \in \mathcal E^{\rm earliest} $
+  with edge weight
+    $duration^{\rm earliest}((source,v^{\rm start})) := \tau^{\rm start}_v - \tau^{\rm min} $.
+    This covers bullet point 1.
+  \item
+  $(v^{\rm start},v^{\rm end}) \in \mathcal E^{\rm earliest}$
+  with edge weight
+  $duration^{\rm earliest}((v^{\rm start},v^{\rm end})) := \tau^{\rm duration}_{v,k}$.
+  This covers bullet point 2.
+\end{itemize}
+
+For each edge $(u,v)$ traversed by lorry $k$, i.e.,for each
+ $(u,v,k) \in  \{ (u',v',k') : x^{k'}_{u',v'} = 1,
+\ u',v' \in \mathcal V,
+\ k' \in \mathcal F^{\rm lorry} \}$,
+the following holds:
+\begin{itemize}
+  \item
+  $(u,v) \in \mathcal E^{\rm earliest}$
+  with edge weight
+  $duration^{\rm earliest}((u,v)) := travelTime(u,v,X,Y)$.
+  This covers bullet point 3.
+\end{itemize}
+
+
+For each transshipment vertex pair $(u,v) \in \mathcal E^{\rm pairs}$,
+the following holds:
+\begin{itemize}
+  \item
+    $(u^{\rm end},v^{\rm start}) \in \mathcal E^{\rm earliest}$
+    with edge weight
+    $duration^{\rm earliest}((u^{\rm end},v^{\rm start})) := 0$.
+    This covers bullet point 4.
+\end{itemize}
+
+Now we can solve a  longest path problem on precedence graph
+$G^{\rm earliest}$
+which yields a mapping
+$f^{\rm earliest}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+that returns the length of the longest path in $G^{\rm earliest}$ from $u$ to $v$ for  $u,v \in \mathcal V^{\rm precedence}$ or zero if there is no such path .  \\
+
+
+
+
+\subsubsection{Latest Departure}
+
+To calculate the latest time at which lorries can start their paths we cast the problem as a longest path problem in a precedence graph
+$\mathcal G^{\rm latest} = (\mathcal V^{\rm precedence},\mathcal E^{\rm latest} , duration^{\rm latest})$, where
+% $\mathcal V^{\rm precedence}$
+% is a set of vertices,
+$\mathcal E^{\rm latest}$
+is a set of edges and
+$duration^{\rm latest}:\mathcal E^{\rm latest} \rightarrow \mathbb R^+_0$
+is a mapping from
+the edges  $\mathcal E^{\rm latest}$ to their weights, which represent durations.
+The latest time at which a lorry $k \in \mathcal  F^{\rm lorry }$ can start its path can be discovered by finding the longest path from the supersink $sink$
+to the vertex $m^{+ \rm start}_k$ that represents the beginning of the visit of the vertex where the lorry start its path.\\
+
+% to the visitation start vertex of the vertex where the lorry start its path $m^{+ \rm start}_k$.
+
+
+
+% Perhaps say something about antecedence instead of precedence/
+
+
+
+The precedence graph
+$\mathcal G^{\rm latest} $
+needs to model the following constraints:
+\begin{enumerate}
+  \item \label{latest:closing} The closing times of vertices.
+  \item The durations of vertex visits.
+  \item The order in which a lorry visits vertices according to its path with the appropriate travel times.
+  \item The precedence a decouple vertex of a transshipment vertex pair has over the couple vertex it is paired with.
+  \item The time at which lorries must end their paths, which is at the earliest possible time.
+  \item The time at which lorries must visit vertices whose closing time is inevitably violated given path assignment $(X,Y) $, which is at the earliest possible time.
+\end{enumerate}
+
+%
+% Since we need to model the duration of a vertex visit, but vertices in a precedence graph do not have weights, we need to employ a trick.
+% For each vertex $v \in \mathcal V$ let
+% $v^{\rm start}$
+% be a vertex that represents the start of $v$'s  visitation
+% and let
+% $v^{\rm end}$
+% be a vertex that represents the end of $v$'s  visitation.
+% The duration of $v$'s visit can then be modeled with the weight of edge
+% $(v^{\rm start},v^{\rm end})$.
+% Let
+% $\mathcal V^{\rm start} = \{  v^{\rm start} : v \in \mathcal V \} $
+% be the set of visitation start vertices
+% and let
+% $\mathcal V^{\rm end} = \{  v^{\rm end} : v \in \mathcal V \} $
+% be the set of visitation end vertices.
+% Let
+% $source,sink $
+% be the supersource and supersink vertex respectively.
+% Then let
+% $\mathcal V^{\rm precedence} :=
+% \mathcal V^{\rm start}
+% \cup
+% \mathcal V^{\rm end}
+% \cup
+% \{source,sink\}$.\\
+
+
+For each vertex $v$ visited by lorry $k$, i.e., for each
+ $(v,k) \in  \{ (v',k') :
+\sum_{w \in \mathcal V} x^{k'}_{v',w} + x^{k'}_{w,v'} > 0,
+\ v' \in \mathcal V,
+\ k' \in \mathcal F^{\rm lorry} \}$,
+the following holds:
+\begin{itemize}
+  \item
+  $( sink,v^{\rm end})  \in \mathcal E^{\rm latest} $
+  % $(sink,v^{\rm end})  \in \mathcal E^{\rm latest} $
+  with edge weight
+    $duration^{\rm latest}((sink,v^{\rm end})) := \tau^{\rm max} - \tau^{\rm end}_v $.
+    This covers bullet point 1.
+  \item
+  $(v^{\rm end},v^{\rm start}) \in \mathcal E^{\rm latest}$
+  with edge weight
+  $duration^{\rm latest}((v^{\rm end},v^{\rm start})) := \tau^{\rm duration}_{v,k}$.
+  This covers bullet point 2.
+\end{itemize}
+
+
+
+For each edge $(u,v)$ traversed by lorry $k$, i.e., for each
+ $(u,v,k) \in  \{ (u',v',k') : x^{k'}_{u',v'} = 1,
+\ u',v' \in \mathcal V,
+\ k' \in \mathcal F^{\rm lorry} \}$,
+the following holds:
+\begin{itemize}
+  \item
+  $(v,u) \in \mathcal E^{\rm latest}$
+  with edge weight
+  $duration^{\rm latest}((v,u)) := travelTime(u,v,X,Y)$.
+  This covers bullet point three.
+\end{itemize}
+
+
+For each transshipment vertex pair $(u,v) \in \mathcal E^{\rm pairs}$,
+the following holds:
+\begin{itemize}
+  \item
+    $(v^{\rm start}, u^{\rm end}) \in \mathcal E^{\rm latest}$
+    with edge weight
+    $duration^{\rm latest}((v^{\rm start}, u^{\rm end})) := 0$.
+    This covers bullet point four.
+\end{itemize}
+
+For each lorry $k \in \mathcal F^{\rm lorry} $
+the following holds:
+\begin{itemize}
+  \item
+  $( sink,m^-_k)  \in \mathcal E^{\rm latest} $
+  with edge weight
+    $duration^{\rm latest}(( sink,m^-_k) ) := \tau^{\rm max} - f^{\rm earliest}(source,m^-_k) $.
+    This covers bullet point 5.
+\end{itemize}
+
+For each vertex whose closing time is already violated if it is visited at the earliest possible time
+$ v^{\rm end} \in \{ u^{\rm end} :f^{\rm earliest}(source,u^{\rm end} ) > \tau^{\rm end}_u
+, \ u^{\rm end} \in \mathcal V^{\rm end} \}$
+% $k \in \mathcal F^{\rm lorry} $
+the following holds:
+\begin{itemize}
+  \item
+  $( sink,v^{\rm end})  \in \mathcal E^{\rm latest} $
+  with edge weight
+    $duration^{\rm latest}(( sink,v^{\rm end})) := \tau^{\rm max} - f^{\rm earliest}(source,v^{\rm end}) $.
+    This covers bullet point 6.
+\end{itemize}
+
+Now we can solve a  longest path problem on precedence graph
+$G^{\rm latest}$
+which yields a mapping
+$f^{\rm latest}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+that returns the length longest path in $G^{\rm latest}$ from $u$ to $v$ for  $u,v \in \mathcal V^{\rm precedence}$ or zero if there is no such path.
+The latest time at which a lorry $k$ can start its path is then $\tau^{\rm max} - f^{\rm latest}(sink,m^{+ \rm start}_k)$ . \\
+
+
+% -------------  till here copy of prev subsubsection
+
+\subsubsection{Generating the Time Table}
+
+The values of the time table can now be generated by calculating the earliest arrival times again but this time the lorries can start their paths no earlier than the just calculated latest start times.\\
+
+$\mathcal G^{\rm result} = (\mathcal V^{\rm precedence}, \mathcal E^{\rm earliest} , duration^{\rm result})$, where
+% $\mathcal V^{\rm precedence}$
+% is a set of vertices,
+% $\mathcal E^{\rm latest}$
+% is a set of edges and
+$duration^{\rm result}:\mathcal E^{\rm earliest} \rightarrow \mathbb R^+_0$
+is a mapping from
+the edges  $\mathcal E^{\rm earliest}$ to their weights, which represent durations. \\
+
+Let
+$\mathcal E^{\rm latest-start} := \{(source,v^{\rm start}) : v \in \mathcal M^{+ } \} \subset \mathcal E^{\rm earliest}$
+% $\mathcal M^{+ \rm start} = \{v^{\rm start} : v \in \mathcal M^{+ } \}$
+be the set of edges has its edge weight changed to constrain the start times of the lorries,
+% that have a different edge weight in $duration^{\rm result}$ than in $duration^{\rm earliest}$.
+% Let the duration of a vertex visit be denoted as
+\begin{align}
+  duration^{\rm result}(u,v) :=
+  \begin{cases}
+    \tau^{\rm max} - f^{\rm latest}(sink,v)     ,
+    & \text{ if }   (u,v) \in \mathcal E^{\rm latest-start},  \\
+    duration^{\rm earliest}      ,
+    & \text{ if }   (u,v) \in \mathcal E^{\rm earliest} \setminus \mathcal E^{\rm latest-start},
+  \end{cases}
+  \quad(u,v) \in \mathcal E^{\rm earliest}. \notag
+\end{align}
+
+
+Now we can solve a  longest path problem on precedence graph
+$G^{\rm result}$
+which yields a mapping
+$f^{\rm result}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+that returns the length longest path in $G^{\rm latest}$ from $u$ to $v$ for  $u,v \in \mathcal V^{\rm precedence}$ or zero if there is no such path .\\
+
+
+% The latest time at which a lorry $k$ can start its path is then $\tau^{\rm max} - f^{\rm latest}(sink,m^{+ \rm start}_k)$ . \\
+
+
+% Now we solve the all-pairs longest path problem of precedence graph $G^{\rm step-two} = (V^{\rm step-one},E^{\rm step-two},C^{\rm step-two} )$ which results in a mapping $f^{\rm step-two}: V^{\rm step-one} \rightarrow \mathbb{R}^+_0$.
+% From this mapping we can infer the latest time at which lorries can arrive at vertices $v \in \mathcal V$,   such that they still end their paths as early as possible and satisfy the time constraints or minimize the violation of them.  \\
+%
+%  Hence both goals we set out with are satisfied.
+
+Time table $T$ related to path assignment $(X,Y)$  can be constructed from the mapping $f^{\rm result}$ as follows:
+\begin{align}
+	t^k_{u,v} =
+  % f^{\rm result}(source,u^{\rm end}) + travelTime(u,v,X,Y),
+  x^k_{u,v} \left(
+   f^{\rm result}(source,u^{\rm end}) + travelTime(u,v,X,Y)
+	\right),
+	\quad u,v \in \mathcal V, k \in \mathcal F^{\rm lorry}. \notag
+\end{align}
+
+For the VRPTT this time table fulfills all four goals we set out to achieve with the time table. For the VRPTTMU it may be possible to further reduce the time related costs of the trailers whilst satisfying the hard and the soft constraints. Developing such a procedure is outside the scope of this thesis. When considering the VRPTT, the trailers' time related costs are minimized by minimizing the durations of the lorries' paths. \\
+
+%
+% % Now we can solve a  longest path problem on precedence graph
+% % $G^{\rm latest}$
+% % which yields a mapping
+% % $f^{\rm latest}: \mathcal V^{\rm precedence} \times \mathcal V^{\rm precedence} \rightarrow \mathbb{R}^+_0$
+% % that returns the length longest path in $G^{\rm latest}$ from $u$ to $v$ for  $u,v \in \mathcal V^{\rm precedence}$ . \\
+%
+%
+%
+%
+% To continue with the second step we construct a precedence graph to calculate the latest time at which lorries can start their paths whilst ending their paths as early as possible and whilst minimizing the violation of any endings of time window.\\
+%
+%
+%
+%  % which is basically the first step in reverse. We reverse the direction of the edges, we fix the end of path times of the lorries to the values found in step one  and add edges to ensure the end of the time windows of the vertices.
+%
+%
+% Let
+% $E^{\rm step-two} , C^{\rm step-two}$
+% be the set of edges and edge weights respectively.
+%
+% Each end of lorry path vertex
+% $u \in M^-$
+% has and edge between the supersink and its end of visit vertex
+% $ (sink,v^{\rm end}_u ) \in E^{\rm step-two}$
+% with an edge weight  that corresponds to the interval between the vertex'  earliest arrival time and the latest arrival time of any vertex
+%  $\tau^{\rm step-one-max} - f^{\rm step-one}(u) \in C^{\rm step-two}$. \\
+%
+%  Each visited vertex except for the end of path vertices
+%  $u \in \mathcal V^{\rm used} \setminus M^-$
+%  has and edge between the supersink and its end of visit vertex that represents the time interval between the time at which the latest lorry ends its path and the maximum of the end of the vertex's time window and the earliest arrival time,
+%  $ (sink,v^{\rm end}_u ) \in E^{\rm step-two}$
+%  with edge weight
+%  $(\tau^{\rm step-one-max} - \max \left( \tau^{\rm end}_u \right), f^{\rm step-one}(u)) \in C^{\rm step-two}$. \\
+%
+% Each visited vertex
+% $u \in \mathcal V^{\rm used}$:
+% \begin{itemize}
+%   \item
+%   is visited by the lorry
+%   $k \in \mathcal F^{\rm lorry}$
+%   that satisfies the constraint
+%   $ \sum_{j \in \mathcal V} x^k_{u,j} + x^k_{j,u} > 0  $ .
+% \item
+% has an edge that models the precedence relation of the end of the visit vertex over the start of visit vertex
+% $( v^{\rm end}_u,v^{\rm start}_u) \in E^{\rm step-two} $,
+% and a corresponding edge weight that models the duration of the visit
+% $\tau^{\rm visit}_{u,k} \in C^{\rm step-two} $.
+% % \item
+% %
+% % %
+% \end{itemize}
+%
+% % has and edge between the supersink and its end of visit vertex that represents the time interval between $\tau^{\rm step-one-max}$ and the end of the vertex's time window
+% % $ (sink,v^{\rm end}_u ) \in E^{\rm step-two}$
+% % with edge weight
+% % $(\tau^{\rm step-one-max} - \tau^{\rm end}_u \in C^{\rm step-two}$ ,
+% % an edge that models the interval before the start of its time window
+% % $(source,v^{\rm start}_u) \in E^{\rm step-one} $
+% % and the corresponding edge weight
+% % $ \tau^{\rm start}_u  \in C^{\rm step-one}  $
+% Each traversed edge
+% $(i,j) \in E^{\rm used}$
+% has an edge that models the travel time
+% $(v^{\rm start}_j, v^{\rm end}_i) \in E^{\rm step-two}$
+% with a corresponding weight
+% $\tau^{\rm travel}_{i,j,k} \in C^{\rm step-two} $. \\
+%
+% Each used transshipment decouple vertex
+% $r^{j,-}_i \in \mathcal V^{\rm used} \cap R^-, i \in \{ 1,\ldots,\eta \}, j \in \mathcal L^{\rm transshipment}$
+% has an edge that models  that it is preceded by the couple vertex it is paired with
+% $ (v^{\rm start}_{r^{j,+}_i }, v^{\rm end}_{r^{j,-}_i } ) \in E^{\rm step-two} $
+% which has zero edge weight
+% $ 0 \in C^{\rm step-two} $. \\
+%
+% Now we solve the all-pairs longest path problem of precedence graph $G^{\rm step-two} = (V^{\rm step-one},E^{\rm step-two},C^{\rm step-two} )$ which results in a mapping $f^{\rm step-two}: V^{\rm step-one} \rightarrow \mathbb{R}^+_0$.
+% From this mapping we can infer the latest time at which lorries can arrive at vertices $v \in \mathcal V$,   such that they still end their paths as early as possible and satisfy the time constraints or minimize the violation of them.  \\
+%
+%  Hence both goals we set out with are satisfied. Now $T$ has the following values
+% \begin{align}
+% 	t^k_{i,j} =
+%   x^k_{i,j} \left(
+% 	\tau^{\rm step-one-max} - f^{\rm step-two}( v^{\rm start}_j)
+% 	\right),
+% 	\quad i,j \in V, k \in \mathcal F^{\rm lorry}.
+% \end{align}
+
+
+%
+%
+% \subsection{Tabu set}
+%
+% The tabu is a set that stores not only all paths and vehicle assignments that have been seen thus far, but also all
+%
+
+
+
+
+
+
+
+
+
+\subsection{Algorithm  }
+
+\label{sec:algo}
+
+In this section the VNS heuristic that used to generate solutions to the VRPTT and the VRPTTMU is described.\\
+
+
+
+% TODO A set and a priority queue are used to increase the efficiency of the optimization method.\\
+
+% %how to evaluate solution
+% When a  path assignment $(X,Y)$ that satisfies the hard constraints is found its score
+%  % $score(X,Y) := C(X,Y,L,T) + U(X,Y,L,T)$,
+% % which is the sum of its costs and its penalties,
+% is evaluated.
+% First,  its related load table $L$ and time table $T$ are calculated. This gives us a solution $(X,Y,L,T)$ of which the cost $C(X,Y,L,T)$ and the penalty $U(X,Y,L,T)$ can be calculated. The score $score(X,Y,L,T) = C(X,Y,L,T) + U(X,Y,L,T)$ of a solution   is equal to the sum of the costs and the penalties.\\
+
+% When a  path assignment $(X,Y)$ that satisfies the hard constraints is found, its score $SCORE(X,Y)$ is evaluated. This evaluations goes as follows: first  its related load table $L$ and time table $T$ are calculated. This gives us a solution $(X,Y,L,T)$ of which the cost $C(X,Y,L,T)$ and the penalty $U(X,Y,L,T)$ can be calculated. The score $SCORE(X,Y) = C(X,Y,L,T) + U(X,Y,L,T)$ of a path assignments $(X,Y)$  is equal to the sum of the cost and the penalty of its solution.\\
+
+%how to rank solutions
+ % Solutions are ranked by their score using a priority queue $PQ$, such that solutions with the lowest scores will have their neighborhoods searched first for new solutions.
+ % This decreases the amount of time spent searching areas of the solution space that have litlle promise.
+ % This decreases the amount of solutions that need to be evaluated before good solutions are found.
+  % \\
+ %  solution's neighborhoods should be explored first for new solutions.
+ % The priority queue uses  the negative of the score function $SCORE$ as a priority function, such that neighborhoods of path assignments with low scores have the highest priority. \\
+
+
+ % Path assignments are ranked using a priority queue $PQ$, to determine which neighborhoods should be explored first. The priority queue uses  the negative of the score function $SCORE$ as a priority function, such that neighborhoods of path assignments with low scores have the highest priority. \\
+
+%after new solution found first filter
+% To reduce the amount of redundant computation, all solutions that have already been found are cached in a tabu set $TABU$.
+% Newly found solutions are checked for presence in the tabu set  before they are added to the priority queue.
+% Only if it is not present in the tabu set will it be added to the priority queue $PQ$ and to the tabu set $TABU$. \\
+
+% To reduce the amount of redundant computation, newly found path assignments are checked for presence against a set of path assignments $TABU$ that have already been found. If a path assignment is already in the set it will not be put in the priority queue. If however, it is not present in the set, it will be added to the priority queue $PQ$ and to the tabu set $TABU$. \\
+
+
+
+% There are many similarities with a local search algorithm. The difference is that this algorithm does not have the notion of current solution state of which a neighborhood is explored and from which the next state may be selected. Instead a priority queue of tasks is used that can be executed asynchronously.\\
+% % This has the benefit that it makes the algorithm embarrassingly parallel. \todo{an embarrassingly parallel problem is an often used term for  a problem where little or no effort is needed to separate the problem into a number of parallel tasks. }
+% 2)
+% describe the probabilistic method that is used to select the next task
+% 3) describe the priority function (:= cost + penalty)
+% 4) change this Section to new word-use
+%
+% The algorithm starts with an empty solutions, which is a path-valid solution. Tasks are created with the empty solution as input.
+
+A few concepts need to be explained first.
+A priority queue $PQ$ is a collection for items that efficiently keeps the items sorted with respect to a certain priority function of the items' attributes, whilst adding or removing items from it.
+The VNS uses the priority queue to store solutions whose neighborhoods have not been searched yet and uses their scores to sort them.
+Solutions with lower scores will have their neighborhoods searched first for new solutions.
+The score
+$score(X,Y,L,T) = C(X,Y,T) + U(X,Y,L,T)$
+of a solution $(X,Y,L,T)$ is the sum of its penalties and its costs.
+The tabu set $TABU$ is a collection for items that that can efficiently store items and check whether an item is a member of it.
+The VNS uses a tabu set to store path assignments and to check whether a path assignment has been seen found before.  \\
+
+% Solutions found by the VNS are stored in order with respect to their score in a priority queue $PQ$.
+% Applying neighborhood operators to a path assignment that is removed from the priority queue is the method by which new path assignments are generated.
+% A path assignment $(X,Y)$ is turned into a solution by calculating the related time table $T$ and load table $L$.
+% A solution $(X,Y,L,T)$ can be evaluated by calculating its score
+% $score(X,Y,L,T) = C(X,Y,L,T) + U(X,Y,L,T)$, which is the sum of its costs and its penalties.
+% A tabu set $TABU$ caches all generated path assignments such that the VNS knows whether a certain path assignment has been seen before.\\
+
+
+% Since there is a positive relation between the score of a solution and the scores of the solutions that are generated by applying operators on it,
+%
+%
+%
+% % The main idea behind the optimization method is as follows:
+% There is a set of operators $\mathcal O$ that can be applied on path assignments of solutions to generate new path assignments.
+% Operators filter out path assignments that break  hard constraints.
+% To reduce the amount of redundant computation, all generated path assignments are cached in a tabu set $TABU$.
+% Generated path assignments are checked for presence in the tabu set.
+% %
+% Only if a path assignment is not present in the tabu set will it evaluated and added to the priority queue $PQ$ and to the tabu set $TABU$.
+% %
+% To evaluate  a  path assignment $(X,Y)$
+% % that satisfies the hard constraints is found its score
+% %  % $score(X,Y) := C(X,Y,L,T) + U(X,Y,L,T)$,
+% % % which is the sum of its costs and its penalties,
+% % is evaluated.
+% first  its related load table $L$ and time table $T$ are calculated.
+% This results in a solution $(X,Y,L,T)$ of which the cost $C(X,Y,L,T)$ and the penalty $U(X,Y,L,T)$ can be calculated.
+% The score $score(X,Y,L,T) = C(X,Y,L,T) + U(X,Y,L,T)$ of a solution is equal to the sum of its costs and its penalties.
+% Solutions are ranked by their score using a priority queue $PQ$, such that solutions with the lowest scores will have their neighborhoods searched first for new solutions.
+% This decreases the amount of time spent searching areas of the solution space that have little promise.
+% \\
+
+
+The VNS starts with  an initial solution in the priority queue $PQ$ and with the solution's path assignment in the tabu set $TABU$.
+%
+The initial solution can just be the solutions where every lorry goes from its start vertex straight to its end vertex.
+%
+% To reduce the amount of redundant computation, all generated path assignments are cached in a tabu set $TABU$.
+% Generated path assignments are checked for presence in the tabu set.
+% The initial solution is evaluated.
+% It is set as the current best solution and added to the priority queue $PQ$.
+% Then main loop of the algorithm is then started.\\
+%
+With probability $p \in (0,1)$ a random path assignment $(X,Y)$ is removed from the priority queue, otherwise the path assignment with the lowest score is removed from the priority queue.
+% The VNS remove
+A set of new path assignments
+% $ \bigcup_{o \in \mathcal O} \mathcal{N}\left(X,Y,o\right)$
+is generated by applying all neighborhood operators to the path assignment $(X,Y)$.
+The VNS then filters out any path assignment that breaks a hard constraint.
+% For every new path assignment check whether it breaks a hard constraint or whether it is a member of the tabu set. If so, do nothing.
+The VNS filters out any path assignments that is already a member of the tabu set to reduce the amount of redundant computation.
+%
+The solution $(X,Y,L,T)$ and the score $score(X,Y,L,T)$ will be calculated of each path assignment that is not filtered out.
+These solutions will be compared with the best solution found thus far and added to the priority queue.
+%
+This process repeats itself until a stopping condition is satisfied or until the priority queue is empty.
+The solution with the lowest cost and without penalty is then returned.
+ % The algorithm is written in pseudocode in Algorithm \ref{alg:basis}.
+
+
+
+% The main idea behind the optimization method is as follows:
+% There is a set of operators $\mathcal O$ that can be applied on path assignments of solutions in the priority queue to generate new path assignments.
+% Two data structures are initialized: a tabu set $TABU$ that is used to avoid redundant computation and a priority queue $PQ$ that keeps the path assignments in sorted order with respect to their score.
+% An initial solution is evaluated.
+% It is set as the current best solution and added to the priority queue $PQ$.
+% Then main loop is started.\\
+%
+% With probability $p$ a random path assignment $(X,Y)$ is removed from the priority queue, otherwise the path assignment with the highest priority is removed from the priority queue.
+% A set of new path assignments
+% $ \bigcup_{o \in \mathcal O} \mathcal{N}\left(X,Y,o\right)$ is generated by applying all operators to the path assignment $(X,Y)$.
+% For every new path assignment check whether it breaks a hard constraint or whether it is a member of the tabu set. If so, do nothing.
+% Otherwise, calculate the score $SCORE(X,Y)$ and add $(X,Y)$ to $PQ$ and to $TABU$ .
+% If the path assignment is valid and has the lowest cost thus far, set the path assignment as the new current best path assignment.
+% If the stopping condition is satisfied return the current best solution, otherwise repeat the main loop.
+
+
+% In Algorithm \ref{alg:basis} the optimization model is given in pseudocode.
+%
+% \makeatletter
+% \def\BState{\State\hskip-\ALG@thistlm}
+% \makeatother
+% \begin{algorithm}[h!]
+% \caption{Pseudocode}
+% \label{alg:basis}
+% \begin{algorithmic}[1]
+% % \State $\text{Input: set of operators $\mathcal{O}$, stopping conitions, . } $
+% \State $\text{Initialize $TABU$ and $PQ$ using an initial solution} $
+% \State $\text{ $bestScore := \infty $ } $
+% % \State $\textit{\textbf{x}}^{\text{best}} = \textit{\textbf{x}}$
+% \While {stopping conditions not satiesfied}:
+% 	\State With probability $p$ remove a random solution $(X,Y,L,T)$ instead of the solution with the lowest score from $PQ$
+% 	%  $(a^{\rm curr},s^{\rm curr})$ with the highest priority $p(a^{\rm curr},s^{\rm curr};\boldsymbol{\omega})$  from $Q$
+%   \For {each neighborhood operator  }%created by applying action $a^{\rm curr}$ to solution $s^{\rm curr}$}
+% 	\For {each $(X',Y')$ resulting from applying the neighborhood operator to $(X,Y)$}
+%   % \in \bigcup_{o \in \mathcal O} \mathcal{N}\left(X,Y,o\right)$  }%created by applying action $a^{\rm curr}$ to solution $s^{\rm curr}$}
+% 	\If {$(X',Y')\notin TABU$ and $(X',Y')$ does not break hard constraint}
+%   %  \in \mathcal{X,Y}^{\rm semi}$}
+%   \State Add $(X',Y')$ to $TABU$
+%   \State Calculate related solution $(X',Y',L',T')$  and add to $PQ$
+%   % $SCORE(X,Y)$ and add $(X,Y)$ to $TABU$ and $PQ$
+% 	\State evaluate  $SCORE(X,Y)$ and add $(X,Y)$ to $TABU$ and $PQ$
+% 	% \State For $(X,Y)$ calculate $L$, $T$, cost and penalties
+% 	\If {$(X,Y)$ satisfies all constraints and has lower cost than current best }
+%   \State $(X,Y)$ is current best
+% 	\EndIf
+% 	\EndIf
+% 	\EndFor
+%   \EndFor
+% \EndWhile
+% \Return current best
+% \end{algorithmic}
+% \end{algorithm}
+
+
+
+
+
+
+% This generated set of $(X,Y)$s is the neighborhood $N(X,Y,o)$  of $(X,Y)$ where the neighborhood structure is governed by operator $o$.
+% Let a task $TASK(X,Y,o)$ be defined as  applying an operator $o$ on an $(X,Y)$  to find all $X,Y \in N(X,Y,o)$. From every newly found $(X,Y)$,   new tasks $TASK(X,Y,o), \ o \in \mathcal O$ are constructed. \\
+
+
+
+% Therefore, the value of $\boldsymbol{\omega}$ determines the search behaviour of the algorithm. \\

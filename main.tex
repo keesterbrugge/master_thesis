@@ -1,5 +1,79 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage{verbatim}
 \usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{bbm}
+\usepackage{tabularx}
+% \usepackage{changepage}
+\usepackage[export]{adjustbox}[2011/08/13]
+
+
+% \setlength\parindent{0pt}
+%\usepackage{cite}
+
+\title{An adaptive large neighborhood search heuristic for the vehicle routing problem with trailers and transshipments}
+\author{Kees ter Brugge}
+\date{\today}
 \begin{document}
-(Type your content here.)
+\setlength{\parindent}{0pt}
+\maketitle
+
+
+\begin{abstract}
+The vehicle routing problem with trailers and transshipments (VRPTT) generalizes the truck and trailer routing problem (TTRP) such that a single trailer can be shared by multiple lorries.
+% The VRPTT is useful to model vehicle routing problems in which synchronization and optionality plays a significant role.
+A simpler representation of load transfers has been formulated for the VRPTT.
+% The VRPTT has been reformulated simpler without losing generality.
+A variable neighborhood heuristic (VNS) has been developed that finds results close to the upper bounds of all instances with up to eight customers within minutes.
+The results of the VNS for the VRPTT are the first that include the time related costs of a solution, which allows for a comparison with results for the TTRP on these instances.
+The comparison suggest that these instances are not a good choice for showing the benefits of trailers sharing, since trailer sharing was not used in any of the best solutions found by the VNS.
+An extension was made to the model which allows lorries to take multiple trips during one planning horizon.
+ % which leads to significant cost reductions on many instances.
+This extension resulted in significant cost reductions on many instances.
+
+
+
+\end{abstract}
+
+\newpage
+\tableofcontents
+
+\newpage
+\input{introduction}
+
+\newpage
+\input{problem.tex}
+
+\newpage
+\input{problem_formulation}
+
+\newpage
+\input{optimization_method.tex}
+
+\newpage
+\input{test_and_results.tex}
+
+\newpage
+\input{discussion_and_future_work.tex}
+
+\newpage
+\input{appendix.tex}
+
+\newpage
+\bibliography{main}
+\bibliographystyle{unsrt}
+
+
+
+
 \end{document}
