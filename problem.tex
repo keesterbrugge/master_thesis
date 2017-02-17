@@ -417,8 +417,7 @@ Not creating a separate event for load transfers has enabled us to infer this.
 
 
 
-\subsubsection{Timing.
-At what time should each event take place, such that there is enough time to perform each event, travel between events, such that the time windows are notS violated and the least amount of time is spent just waiting till a location opens. ??Added preference; we would like to do everything as early as possible?? if start and end time are fixed, we would liike to do everything as early as possible (because of slack and because that is just how I defined that it works. Lorry starts as soon as arrives or as sson as openss. does not wait at vertex. also becasue there is no slack than anymore) }
+\subsubsection{Timing }
 
 % In the previous section we talked about the flow of load, now we will talk about the flow of time.
 % The flow of time can best be described using a time table that describes the time at which a lorry arrives at an event.
@@ -431,16 +430,29 @@ At what time should each event take place, such that there is enough time to per
 % the duration of the lorry's path can be .
 % Another use of a time table is that we can verify whether the paths of the lorries satisfy the time constraints of the locations.
 
-The fourth question that needs to be answered is about at what time the events of a plan  take place such that costs are minimized and the locations' time windows are not violated. In this example the amount of time that the fleet uses is used as a proxy for costs.
-\\
+% The fourth question that needs to be answered is about at what time the events of a plan  take place such that costs are minimized and the locations' time windows are not violated. In this example the amount of time that the fleet uses is used as a proxy for costs.
+% \\
 
-To illustrate the problem we extend the example of Section \ref{sec:simple-example} with time windows, travel times, event durations and a planning horizon.
-The planning horizon in this example is the interval [0,22] hours.
-The rest of the time related information is provided in Figure ~\ref{fig:graph_time}. \\
+
+The fourth question that needs to be answered is about at what time the events of a plan  take place.
+It would be preferable if the lorry would take the least amount of time possible to complete its path and start performing each activity as early as possible. 
+% and be at each event at the depot as early as possible. 
+However, there should be enough time for the lorry to travel between locations,
+to perform the activities of the events
+and not violate  the time windows of the locations.\\
+
+
+
+% .
+% At what time should each event take place, such that there is enough time to perform each event, travel between events, such that the time windows are notS violated and the least amount of time is spent just waiting till a location opens. ??Added preference; we would like to do everything as early as possible?? if start and end time are fixed, we would liike to do everything as early as possible (because of slack and because that is just how I defined that it works. Lorry starts as soon as arrives or as sson as openss. does not wait at vertex. also becasue there is no slack than anymore)
+
+
+
+\
 
 % , the customer supply ends up at
 
-\begin{figure}[!h]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.99\textwidth]{img/example_with_time_v2.pdf}
   \caption{An illustration of the lorry's path with time information illustrated in blue in hours. Each location has a time window that holds for all events at that location.
@@ -451,58 +463,130 @@ The rest of the time related information is provided in Figure ~\ref{fig:graph_t
   \label{fig:graph_time}
 \end{figure}
 
-
-This problem can be turned into a longest path problem.
-In Figure ~\ref{fig:graph_time} it can be seen that
-An abstraction of the problem  in the previous section can be made.
-% Both customers have a supply of size four.
-% Say the lorry has a loading speed of four per hour.
-% Then the duration of collecting the supply at a customer, indicated in Figure ~\ref{fig:graph_time} with a question mark, is exactly an hour.
-
-Enough information is provided to determine the earliest time at which the events in the lorry's path can take place.
-Preferably this
-
-This is done by constructing a precedence graph.
-With this information it can the
-
-To show how we can calculate a timetable from the path of the lorry we represent the situation again as a graph.
-Every vertex represents an event in Figure ~\ref{fig:graph_time}.
-We remove the weight on the vertices by duplicating every vertex.
-Every event now corresponds to a start vertex and an end vertex.
-The duration of the event will now be represented by the weight of the edge between the start and end vertex of the event. We can see this illustrated in ~\ref{fig:duplication}
+To illustrate the problem we extend the example of Section \ref{sec:simple-example} with time windows, travel times, event durations and a planning horizon of 0:00 till 22:00 hours.
+The rest of the time related information is provided in Figure ~\ref{fig:graph_time}. \\
 
 
 
-% TODO The question marks at the customers' indicate that the duration of collecting the supply is dependent on the loading speed of the vehicle.
-
-% TODO create easy example of pert diagram. use same symbols s to t. Say we have several jobs to do that dpened on eachother in the following way.
-
-% TODO clearly define which question you answer. Deadline missing boolean? schedulng? Do i use edges from events to sink for end time window???
-Furthermore,
-
-\begin{figure}[!h]
+\begin{figure}[h]
   \centering
-    \includegraphics[width=0.8\textwidth]{img/pert.pdf}
-  \caption{FIXME}
+    \includegraphics[width=0.6\textwidth]{img/pert.pdf}
+  \caption{An illustration of how the duration of an event $V$ is modeled by replacing the event with two other events $V'$ and $V''$ with an edge weight.}
   \label{fig:duplication}
 \end{figure}
 
-We can take time relative to the depot start time since no action can be taken before the depots opens up.
-A fixed amount of time is planned for the load transfer independent of the amount of load that is actually transfered.
-This is a sensible assumption when the setup cost is the determining factor
-for the duration of a load transfer.
+Similar as the division of load, the problem of timing the events can also be modeled as a graph problem. 
+This is done by creating a precedence graph, where edge weights represent the time between events. 
+A source and a sink are added to model the beginning and the end of the planning horizon. 
+Since some events have a duration themselves each event is first divided into two separate events such that the duration of an event can be represented as the edge weight between the two new events as shown in Figure \ref{fig:duplication}. 
+Furthermore, a directed edge is added between the decouple and the couple event at the transshipment location to model that a trailer must be decoupled before it can be coupled again. 
+\\
 
-% TODO explain that where the load is tranfered is of no consequence for the time table. It is either at a customer where it can  be loaded straight to the trailer, or at a TL loc. and the time it will take is always less than the time that we have reserved for TL
+
 
 
 
 % TODO perhaps I should also make a small example that shows a dynamic time window with 2 lorries. Use this opportunity as well to explain that there can be no cycle.
 \begin{figure}[!h]
   \centering
-    \includegraphics[width=0.8\textwidth]{img/example_time_duplicates_nozero.pdf}
-  \caption{FIXME}
+    \includegraphics[width=1.0\textwidth]{img/forward_intro_tt.pdf}
+  \caption{An illustration of the precedence graph. 
+  The edges that model the opening times of the locations at which the events take place are indicated with the blue edges. 
+  The black edges indicate the event durations and the travel times between the events. If an edge's weight is not shown it has the value zero. }
   \label{fig:longest_path}
 \end{figure}
+
+Let us first try to answer at what time the lorry can finish its path. 
+We answer this by performing a longest path search on the precedence graph shown in Figure ~\ref{fig:longest_path}, which also has edges that model the opening times of the locations at which the events take place. 
+We see that the longest path $\{ source, F', F'', G', G'', $ $ E', E'',  H', H'', D', D'', B', B'' \} $ from the source to the end of the event that stops the lorry's path, $B''$, is 12:30 hours.
+Therefore, the earliest that the lorry can end its path is at 12:30 o'clock.
+The path has taken the lorry 7:30 hours. \\
+
+If the lorry start its path as early as possible, 5:00 o'clock, the lorry would arrive at the trailer customer at 6:30 and would have to wait have an hour before it could start collecting the supply. 
+We can perform a similar longest path search backwards to see at what time the lorry can start its path whilst finishing its path at 12:30 o'clock.
+The longest path search is performed on the antecedence illustrated in Figure \ref{fig:antecedence}. 
+The time between the time at which the lorry can end its path at the earliest and the end of the planning horizon is 22:00 - 12:30 = 9:30 hours. \\
+
+
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{img/backward_intro_tt.pdf}
+  \caption{An illustration of the precedence graph. 
+  The edges that model the opening times of the locations at which the events take place are indicated with the blue edges. 
+  The black edges indicate the event durations and the travel times between the events. If an edge's weight is not shown it has the value zero. }
+  \label{fig:antecedence}
+\end{figure}
+
+The longest path in the antecedence graph from the sink to the start of the lorry's path $A'$ is 16:30 hours, hence the lorry can start its path at 5:30 and still end its path 12:30 o'clock. 
+
+We now perform the longest path search on the precedence graph illustrate in Figure \ref{fig:longest_path} again, only this time the edge weight of the edge between the source and $A'$ is 5:30. 
+This longest search provides the timing of the events that minimizes the lorry's path duration, schedules activities as early as possible whilst taking into account the travel times, the activity durations and the location's time windows. 
+The resulting time table is given in Table \ref{tab:timing}
+
+
+\begin{table}[!h]
+  \centering
+  \begin{tabular}{@{}lll@{}} \toprule
+     Event ID & Start time & End time \\ \midrule
+     A & 5:30 & 5:30 \\
+     C & 5:30 & 6:00 \\
+     F & 7:00 & 8:00 \\
+     G & 8:00 & 8:30 \\
+     E & 9:00 & 10:00 \\
+     H & 10:30 & 11:00 \\
+     D & 12:00 & 12:30 \\
+%     2 & depot & couple the trailer & C & 0 \\
+%     3 & trailer customer & collect supply & F & 0 \\
+%     %4 & trailer customer & transfer load & lorry and trailer \\
+%     4 & trailer customer & decouple the trailer & G & 0 \\
+%     5 & lorry customer & collect supply & E & 4 \\
+%     6 & trailer customer & couple the trailer & H & 4 \\
+%     7 & depot & decouple trailer & D & 4 \\
+%     8 & depot & end path  &  B & 4\\     
+    \bottomrule
+  \end{tabular}
+  \caption{The timing of the events in the lorry's path.}
+  \label{tab:timing}
+\end{table}
+
+% This problem can be turned into a longest path problem.
+% In Figure ~\ref{fig:graph_time} it can be seen that
+% An abstraction of the problem  in the previous section can be made.
+% % Both customers have a supply of size four.
+% % Say the lorry has a loading speed of four per hour.
+% % Then the duration of collecting the supply at a customer, indicated in Figure ~\ref{fig:graph_time} with a question mark, is exactly an hour.
+
+% Enough information is provided to determine the earliest time at which the events in the lorry's path can take place.
+% Preferably this
+
+% This is done by constructing a precedence graph.
+% With this information it can the
+
+% To show how we can calculate a timetable from the path of the lorry we represent the situation again as a graph.
+% Every vertex represents an event in Figure ~\ref{fig:graph_time}.
+% We remove the weight on the vertices by duplicating every vertex.
+% Every event now corresponds to a start vertex and an end vertex.
+% The duration of the event will now be represented by the weight of the edge between the start and end vertex of the event. We can see this illustrated in ~\ref{fig:duplication}
+
+
+
+% % TODO The question marks at the customers' indicate that the duration of collecting the supply is dependent on the loading speed of the vehicle.
+
+% % TODO create easy example of pert diagram. use same symbols s to t. Say we have several jobs to do that dpened on eachother in the following way.
+
+% % TODO clearly define which question you answer. Deadline missing boolean? schedulng? Do i use edges from events to sink for end time window???
+% Furthermore,
+
+
+% We can take time relative to the depot start time since no action can be taken before the depots opens up.
+% A fixed amount of time is planned for the load transfer independent of the amount of load that is actually transfered.
+% This is a sensible assumption when the setup cost is the determining factor
+% for the duration of a load transfer.
+
+% % TODO explain that where the load is tranfered is of no consequence for the time table. It is either at a customer where it can  be loaded straight to the trailer, or at a TL loc. and the time it will take is always less than the time that we have reserved for TL
+
+
 
 
 

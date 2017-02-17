@@ -1,0 +1,126 @@
+MYNOTES: what to change
+
+change title, there is still alns in there.
+
+exchange s and t is figure 9 with source and sink.
+Furthermore, change blue lines of opening times to black lines
+
+is it OPT_TTRP or TTRP_OPT or $TTRP_OPT$ (like in symbol table). SHould it even be done with capital letters??
+
+Things left to write: finish tt intro. , change figure event split. 
+
+Fuck intro figures to TT. Just send it for review. If unclear you can always add. 
+
+Turn every entry in symbol table to sentence with capital letter and dot at end. COnsistent
+
+tau^{start/end} --> tau^{open/close}
+
+v^{\rm source}  -> source. Because v^{\rm end} is function of v. 
+hence inconsistent notation. 
+
+page 4 alns -> vns
+
+figure 1 remove lines
+
+remove a few lines from abstract. 
+
+1.4 remove note
+
+Rmemove the retorical questions from 2.2 problem mdoel
+
+Check the last email efraim sent for any remaining feedback
+
+2.1 add \\'s
+
+remove play and end from figure 8 for consistency.
+
+introduce in figure 9 also super source icon and supersink icon
+
+Explicitly mention that the Depot is the supersink for the load. 
+
+ctrl f for FIXME or TODO
+
+make figure for tt simpler Just name if precedence graph, also capacity graph in lt. 
+Just split every event in two. 
+
+Consider puttign the synthetic trailer in a table like the one in section 4. To clarify
+
+In appendix of symbols add sets. thus lorry k must be lorry k \in F^lorry
+
+remove 3 rhetorical questions from load table intro.
+
+references after appendix
+
+separate appenix a b c1 c2 for differnt sections
+
+i,j must often become u,v
+
+decide where to put intro to vrpttmu. btw, also in intro chpater 1?
+
+alns must become vns
+
+If I move definition of X Y and T L and to objective function section it is more
+convenient to make of t-path duriaton a function and also write the costf unctions as 
+such. just as U: penalty is.
+
+Conclusions should not be written in past tense.
+
+N for neighborhood set is very confusing. hence remove from algo subsection
+
+Explicitly state that I extended it to also include time costs. 
+
+
+
+C^step-one must become mapping DURATION . THis mapping is symmetric!!!
+ furhermore, there is only one set of vertices
+, hence remove step one, but make V^precedence. 
+perhaps make from E^step-one -> E^forward
+
+subsection vertices -> vertices and vertex parameters
+
+startVisitation must be latestPossibleVisistationStart. This is true. Change 
+description of assumption that lorries leave immediatley after ending visit. 
+
+Construct the time table not using backward sweep but building up from start times. 
+
+end of time window --> vertex' closing time. also cahnge in parameter definition
+
+former 2 points: decide: is part of vrptt that lorry leaves as early as possible as does 
+visit as earl yas possible. means i have to do third forward sweep. Decision waas made.
+Now be clear that part of vrptt is that lorry depart as early as possible. 
+
+(u,v,) \in {(u',v'):  ...
+
+Stil change 2.2. instance consist of tuple.. .
+
+XY -> path assignment (X,Y)
+###################
+#####DONE ########
+###############
+
+DONE remove \ell
+
+
+DONE check out contributions.txt
+
+DONE what about to early?? i.e. too early serving. This would tranaslate to  arriving at
+the next vertex too early. Is this a separate constraint? how to resolve penalty ?
+no penalty for too early, just not feasible solution
+
+############
+# DO LATER AFTER I GET THE OKAY, perhaps
+############
+
+Remove references to alns?
+
+describe vns more in abstact terms, repeatedly using differnet neighboorhoods to get new solutions.
+
+decide whether to include simple example figure in vrptt section of problem 
+that would use trailer sharing and profit from it. 
+If so uncomment a line about it in conclusion
+Show that with short time window the multiple unload does not give reduced costs. 
+It is always cheaper to let one vehicle do everything. 
+In normal situation this is not possibe within time horizon therefore 
+you have multiple lorries. So assume not enough time for 1 lorry and 1 trailer to do everything
+?? not sure for which conditions this holds:
+that you have a bounded fleet and without trailer sharing you just cant do it.
