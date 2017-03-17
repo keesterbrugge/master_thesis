@@ -31,7 +31,6 @@ In this section we define the sets and parameters provided with the instances us
 Let
 $\mathcal L $
 of be a set of locations and let
-let
 $ \mathcal D : \mathcal L \times \mathcal L \rightarrow  \mathbb{R}^0_+$
 be a mapping from a pair of locations to the distance between them.
 Let
@@ -257,9 +256,11 @@ All possible events can be represented using the just defined vertices. \\
 A transport plan consist of paths, the assignment of vehicles to those paths, the time table and the load table of those paths, all of which will be defined.
 Solving the VRPTT yields such a transport plan.\\
 
-The VRPTT is described with a mixed-integer linear problem over the graph
-$G=(V,E)$
-where the set of edges consist of a subset of all possible edges between the vertices
+The VRPTT is described with a mixed-integer linear problem over the directed graph
+$G=(V,E)$,
+where $E$ is the set of all  
+% the set of edges consist of the  of all possible 
+edges between the vertices
 $ E = \{ (u,v): u,v \in V , u \neq v \} $. \\
 
 %%%%%%%%%%% path and x     %%%%%%%%%%%5
@@ -515,7 +516,7 @@ A trailer departs from a transshipment location's couple vertex if and only if i
 
 
 
-The load of a lorry on an edge can not exceeds the lorry's capacity.
+The load of a lorry on an edge can not exceed the lorry's capacity.
 If a lorry does not traverse an edge, the load of the lorry on that edge is zero,
 \begin{align}
   z_{u,v}^k  - x^{k}_{u,v}  f_k^{\rm capacity}  \leq 0, \quad
@@ -525,7 +526,7 @@ If a lorry does not traverse an edge, the load of the lorry on that edge is zero
 
 
 
-The load of a trailer on an edge can not exceeds the trailer's capacity. If a trailer does not traverse an edge, the load of that trailer on that edge is zero.
+The load of a trailer on an edge can not exceed the trailer's capacity. If a trailer does not traverse an edge, the load of that trailer on that edge is zero.
 \begin{align}
   z_{u,v}^l  - f_l^{\rm capacity}  \sum_{ k \in \mathcal F^{\rm lorry} } y^{k,l}_{u,v}   \leq 0, \quad
   u,v \in V,
@@ -556,7 +557,7 @@ whilst visiting a customer's supply collection vertex, the sum of the load of th
 
 
 
-On vertices other than the supply collection vertices, the load of a lorry can stay the same, or decrease in case some of the load is tranfered to a trailer,
+On vertices other than the supply collection vertices, the load of a lorry can stay the same, or decrease in case some of the load is transfered to a trailer,
 \begin{align}
   \sum_{u \in V} \left( z^k_{u,v} - z^k_{v,u} \right)  \leq 0, \quad
   v \in V \setminus S,
@@ -649,7 +650,7 @@ The following function calculates the amount of travel time
   \sum_{l \in \mathcal F^{\rm trailer}}
   y^{k,l}_{u,v}
   \tau^{\rm extra }_{u,v,k,l}
-  \right)
+  \right).
   % is equal to departure time at u hence minus visit duration
   %%
   \notag
@@ -673,7 +674,7 @@ Hence, given the path assignment $(X,Y)$ and time table $T$ the start time of th
   travelTime(u,v,X,Y)
   % is equal to departure time at u hence minus visit duration
   %%
-  \right)
+  \right).
   % is equal to the start of visit at u
   \notag
 \end{align}
@@ -736,7 +737,7 @@ If a lorry is pulling a trailer whilst traversing an edge its maximum speed coul
 %   isVisited(r^{-,j}_m, X,Y, T) +
 % \end{align}
 
-A trailer must be decoupled at a transshipment vertex before it can be coupled again at the corresponding couple vertex,
+Only after a lorry has started and finished decoupling a trailer at a transshipment vertex can a start be made with coupling the trailer again,  
 % \begin{align}
 %   visitationStart(r^{-,j}_m, X,Y, T) +
 %   \left(  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{r^{-,j}_m,v} -1 \right)
@@ -749,12 +750,26 @@ A trailer must be decoupled at a transshipment vertex before it can be coupled a
 % or alternatively
 \begin{align}
   visitationStart(u, X,Y, T) +
-  \left(  \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w} -1 \right)
-  \tau^R
+%   \tau^{\rm R}   \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,v}   
+  \tau^{\rm R}   \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{w,u}   
+%   \left(  \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w} -1 \right)
+%   \tau^R
   \leq
   visitationStart(v, X,Y, T) ,
-  \quad (u,v) \in \mathcal E^{\rm pairs}
+  \quad (u,v) \in \mathcal E^{\rm pairs}.
 \end{align}
+
+
+% $$ 
+% visitationStart(u,X,Y,T) - visitationStart(v,X,Y,T) \leq \tau^{\rm R} \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}, 
+% \quad (u,v) \in \mathcal{E}^{\rm pairs}
+% $$
+
+% $$ 
+% visitationStart(v,X,Y,T) - visitationStart(u,X,Y,T) \geq + \tau^{\rm R} \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}   , 
+% \quad (u,v) \in \mathcal{E}^{\rm pairs}
+% $$
+
 
 The time a lorry needs  between the start of the time window of the vertex it is currently at and arriving at the next vertex is at least the time needed for the current vertex's visit plus the lorry's travel time between the two vertices,
 % \begin{align}
@@ -773,7 +788,7 @@ The time a lorry needs  between the start of the time window of the vertex it is
 
 
 
-And again, if a lorry is pulling a trailer its maximum speed could be lowered, hence the following constraints also need to be satisfied,
+If a lorry is pulling a trailer, its maximum speed could be lowered, hence the following constraints also need to be satisfied,
 % \begin{align}
 %   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
 %   (y^{k,l}_{i,j} - 1  ) \tau^{\rm max}   \leq
@@ -807,19 +822,28 @@ And again, if a lorry is pulling a trailer its maximum speed could be lowered, h
 
 
 
-\subsubsection{Symmetry Breaking Constraints}
+\subsubsection{Symmetry Breaking Constraint}
 \label{sec:symmetry}
 
-Each transshipment location has $\eta$ duplicate decouple and couple vertex pairs. They can be ordered with the following constraint to reduce the solution space,
+Each transshipment location has $\eta$ duplicate transshipment vertex pairs. They can be ordered with the following constraint to reduce the solution space,
 \begin{align}
-  \sum_{w \in V}
-  \sum_{k \in \mathcal{F}^{\rm lorry} }
-  \left( x^{k}_{w,u} - x^{k}_{w,v} \right) \geq 0,
-  \quad (u,v) \in \mathcal E^{\rm pairs}
+  \sum_{v \in \mathcal V} 
+  \sum_{k \in \mathcal F^{\rm lorry}}
+  x^k_{v,r^{j,-}_{m+1}} 
+  \leq 
+  \sum_{v \in \mathcal V} 
+  \sum_{k \in \mathcal F^{\rm lorry}}
+  x^k_{v,r^{j,-}_{m}} ,
+%   \sum_{v \in \mathcal V} r^{j,-}_{m},
+  \quad m \in \{ 1,\ldots, \eta -1 \},  j \in \mathcal L^{\rm transshipment}.
   % \{ (r^{u,-}_v,r^{u,-}_{v+1})  : \ u \in \mathcal L^{\rm transshipment},
   % \ v    \in \{ 1,\ldots,\eta -1 \} \} . \notag
 \end{align}
 
+
+% $$
+%  \mathcal E^{\rm pairs} = \{  (r^{j,-}_m,r^{j,+}_m ) : r^{j,-}_m \in \mathcal R^- , r^{j,+}_m \in \mathcal R^+, m \in \{ 1,\ldots, \eta \},  j \in \mathcal L^{\rm transshipment}   \}
+% $$
 There are still many sources of symmetry.
 Not every vehicle has unique features, hence many vehicles are interchangeable.
 Furthermore, the ordering of transshipment pair still permits some symmetry.
@@ -883,9 +907,12 @@ Further removing these  sources of symmetry is outside the scope of this thesis 
 
 
 
-\subsubsection{Multiple Unload Constraint}
+\subsubsection{Unload Constraint}
 % , the model without this constraint  will be named after the main consequence of removing this constraint; the vehicle routing problem with transfers, transshipments and multiple unloads (VRPTTMU) }%:
-The following constraint is the difference between the VRPTT and the VRPTTMU,
+% The following constraint is not present in not active in the VRPTTMU. 
+% When added, difference between the VRPTT and the VRPTTMU,
+The VRPTTMU is turned into the VRPTT by adding the following constraint,
+% When the following constraint is added to the VRPTTMU, the VRPTTMU is turned 
  % constraint that when removed, turns the VRPTT into a VRPTTMU
 % The following constraint is added such that the model is similar to the model in ~\cite{drexl2014bandc}, such that findings from that paper can be used for benchmarking purposes.
 \begin{align}
@@ -895,7 +922,7 @@ The following constraint is the difference between the VRPTT and the VRPTTMU,
    & \{  (u',v') : u' \in N^- , \ v'  \in V \setminus   M^-   \} ,\notag \\
   \ k \in \ & \mathcal{F}^{\rm lorry} . \notag
 \end{align}
-The constraint ensures that a lorry can couple (decouple) a trailer at the depot if and only if it is the first (last) thing it does on its path, which hinders multiple unloads. \\
+The constraint ensures that a lorry can couple (decouple) a trailer at the depot if and only if it is the first (last) thing it does on its path, which makes multiple unloads impossible. \\
 % -------------------
 
 %

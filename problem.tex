@@ -10,7 +10,7 @@
 
 % overview
 The VRPTT can be described as follows:
-there is a set of customers with a known, deterministic supply of a single good.
+There is a set of customers with a known, deterministic supply of a single good.
 There is a set of transshipment locations that may be used for parking and load transfers.
 All locations have opening and closing times.
 To collect the customers' supply, a fleet of heterogeneous, limited-capacity vehicles stationed at the vehicle depot is available.
@@ -59,7 +59,7 @@ A solution to an instance of the VRPTT should answer the following questions:
 %\end{itemize}
 
 \begin{itemize}
-\item How should the customers be divided over the lorries and in which order should the lorries visit them to collect their the customers' supply?
+\item How should the customers be divided over the lorries and in which order should the lorries visit them to collect the customers' supply?
 \item How should the lorries use the trailers?
 \item How should the load be divided between the vehicles?
 \item When do all the events in the plan take place?
@@ -72,7 +72,7 @@ A solution to an instance of the VRPTT should answer the following questions:
 
 \label{sec:simple-example}
 
-Lets explore a simple example of the VRPTT.
+Let us explore a simple example of the VRPTT.
 In Figure~\ref{fig:trivial} we can see an illustration of a VRPTT.
 For the moment we ignore some aspects of the VRPTT for the sake of clarity.
 The VRPTT does not allow a vehicle to leave the depot after it visits the depot.
@@ -287,7 +287,7 @@ Every time the lorry is at an event, it can choose to transfer load to the trail
 % At the events where the lorry is coupled to the trailer, load can flow from the lorry to the trailer.
 At the supply collection events, $F$ and $E$,  load can flow from a customer to the lorry.
 When the lorry ends its path at the depot, event $B$, load can flow from the lorry to the depot.
-The only time load can flow out of the trailer is when it decouples at the depot, event $D$ .
+The only time load can flow out of the trailer is when it decouples at the depot, event $D$.
 The maximum amount of load that can flow from a vehicle to the depot is equal to its capacity, which is five for both vehicles.
 We can ensure that the trailer is never overloaded during its path if we constrain the amount of flow from the trailer to the depot to the trailer's capacity, since that is the only time that load can flow out of the trailer.
 Load can flow into and out of the lorry at multiple events, therefore we have to restrict the flow between events to the lorry's capacity such that during its path it never carries more load than its capacity.

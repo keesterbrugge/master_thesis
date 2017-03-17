@@ -254,7 +254,7 @@ Table \ref{tab:nominal} describes for each instance the lowest cost solution fou
 % & \multicolumn{2}{c}{VRPTT} &\multicolumn{2}{c}{VRPTTMU} &
 % \phantom{abc} & \multicolumn{2}{c}{VRPTT} &\multicolumn{2}{c}{VRPTTMU} \\
 %
-instance &  VRPTT &  VRPTTMU &  OPT\_TTRP &&  VRPTT &  VRPTTMU &  LB\_VRPTT &  UB\_VRPTT \\
+instance &  VRPTT &  VRPTTMU &  TTRP\_OPT &&  VRPTT &  VRPTTMU &  VRPTT\_LB &  VRPTT\_UB \\
 %
 \midrule \endhead
 1\_1\_1\_00      &     32660.0 &       32660.0 &        32480.0 &&       25280.0 &         25280.0 &          25280.0 &          25280.0 \\
@@ -395,8 +395,8 @@ Table \ref{tab:relative} describes for each instance the gap in percentages  bet
 \begin{longtable}{lrrcrrcrr}
 \toprule
 % & \multicolumn{2}{c}{time costs included} & \phantom{a}& \multicolumn{4}{c}{excluding time costs} \\
-& \multicolumn{2}{c}{OPT\_TTRP, time cost incl.} & \phantom{a}& %\multicolumn{4}{c}{excluding time costs} \\
-\multicolumn{2}{c}{LB\_VRPTT, time cost excl.}&\phantom{a} & \multicolumn{2}{c}{UB\_VRPTT, time cost excl.} \\
+& \multicolumn{2}{c}{TTRP\_OPT, time cost incl.} & \phantom{a}& %\multicolumn{4}{c}{excluding time costs} \\
+\multicolumn{2}{c}{VRPTT\_LB, time cost excl.}&\phantom{a} & \multicolumn{2}{c}{VRPTT\_UB, time cost excl.} \\
 \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
 instance &  VRPTT &  VRPTTMU &&  VRPTT &  VRPTTMU & & VRPTT &  VRPTTMU \\
 \midrule \endhead

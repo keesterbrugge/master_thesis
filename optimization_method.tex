@@ -43,12 +43,12 @@
 % .    \\
 
 The optimization method used in this thesis is a variation of the variable neighborhood search (VNS).
-Multiple neighborhood structures are used the search to avoid getting stuck in local optima.
+Multiple neighborhood structures are used in the search to avoid getting stuck in local optima.
 This section describes how this heuristic is used to obtain solutions that satisfy the model constraints. \\
 
 
 
-The optimization method includes finding solutions satisfying only a subset of the model constraints. Coverage of which constraints may be violated in this process will be given in Section \ref{sec:relaxation} .
+The optimization method includes finding solutions satisfying only a subset of the model constraints. Coverage of which constraints may be violated in this process will be given in Section \ref{sec:relaxation}.
 In Section \ref{sec:neighborhood} neighborhood structures are described which are used to find new path assignments.
 In Section \ref{sec:load} it is shown how to cast the calculation of a load table related to a path assignment as a maximum flow problem.
 In Section \ref{sec:time} the method used to calculate a load table related to a path assignment by solving a longest path problem is described.
@@ -243,7 +243,7 @@ The penalty $U$ of a solution $ (X,Y,L,T)$ is the sum of all incurred penalties,
 
 A solution to the VRPTT should satisfy all constraints, i.e.,constraints (\ref{con:first}) - (\ref{con:last}).
 A solution to the VRPTTMU should satisfy the same constraints except for constraint (\ref{con:extra}).
-The hard constraints consist of all model constraints other than soft constraints (\ref{con:customer_served}),(\ref{eq:lorrycustomer}), (\ref{eq:time-window}) and (\ref{eq:supply}).
+The hard constraints consist of all model constraints other than soft constraints (\ref{con:customer_served}), (\ref{eq:lorrycustomer}), (\ref{eq:supply}), and (\ref{eq:time-window}).
 
 % Let
 % $\mathcal{X,Y}$
@@ -309,7 +309,7 @@ can be applied to a path assignment to find new path assignments:
 	\item \textit{Remove lorry:} For each used lorry the operator yields a path assignment in which that lorry is removed. A lorry is removed by removing all vertices from the lorry's path except for its own start and end vertex and by removing any trailer that was pulled by the lorry.
 
 	\item \textit{Swap trailer:} For each used trailer and for each unused trailer the operator yields a path assignment in which the used trailer is swapped for the unused trailer. A trailer and an unused trailer are swapped by swapping the start and end vertices of the used trailer with the start and end vertices of the unused trailer.
-	\item \textit{Swap lorry:} For each used lorry and for each unused lorry the operator  yields a path assignment in which the used lorry is swapped with the unused lorry. An used and an unused lorry are swapped by moving all vertices of the used lorry's path except for its own start and vertex, to the unused lorry's path.
+	\item \textit{Swap lorry:} For each used lorry and for each unused lorry the operator  yields a path assignment in which the used lorry is swapped with the unused lorry. A used and an unused lorry are swapped by moving all vertices of the used lorry's path except for its own start and vertex, to the unused lorry's path.
 	\item \textit{Share trailer:}
   Let it be given that a lorry $k_1$ visits both the decouple
   $i \in \mathcal R^- $
@@ -345,7 +345,7 @@ can be constructed  that also satisfies the hard constraints.
  It is  possible that for a path assignments that satisfies the soft constraints no related load table exists in which the whole supply of each customer is collected.
  % that satisfies the soft constraints, i.e.,
  % This is the case when at least one lorry does not have enough capacity to collect the supply of a customer it visits.
-In that case the load table violates a soft constraint and incurs penalty described in equation \eqref{pen:load}.
+In that case the load table violates a soft constraint and incurs the penalty described in equation \eqref{pen:load}.
 \\
 
 We find a load table $L$ by modeling the problem as a maximum flow problem in a capacity graph.
@@ -380,7 +380,7 @@ Let
 $\mathcal G^{\rm c} = ( \mathcal V^{\rm c},\mathcal E^{\rm c}, capacity)$
 be the capacity graph, where
 $\mathcal V^{\rm c}$
-is a set of vertices ,
+is a set of vertices,
 $\mathcal E^{\rm c}$
 is a set of edges
 and
@@ -400,9 +400,9 @@ to model the flow of load from a lorry to the trailer and from the trailer to th
 See Figure~\ref{fig:flow_abstract} for an illustration of a capacity graph where set $\mathcal P$ contains only one element, the vertex named  P.
 %
 Let $source \in \mathcal V^{\rm c} $ be a source vertex that functions as a supersource for the supply of the customers.
-It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex S.
+It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex "source".
 Let $sink \in \mathcal V^{\rm c}$ be a sink vertex that functions as a supersink for  the load of the lorries and trailers.
- It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex T. \\
+ It is illustrated in  Figure~\ref{fig:flow_abstract} with the vertex "sink". \\
 
 %end test
 
@@ -508,7 +508,9 @@ with a capacity equal to the trailer's capacity
 $ capacity((u,p_l)) := f^{\rm capacity}_l$
 to model whether load was transfered to the trailer there, i.e.,
 $\{ (u,p_l):
-\sum_{v \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} + y^{k,l}_{v,u} > 0,
+\sum_{v \in \mathcal V}\sum_{k \in \mathcal F^{\rm lorry}} 
+\left( y^{k,l}_{u,v} + y^{k,l}_{v,u} \right)
+> 0,
 u \in \mathcal V, p_l \in \mathcal P,  l \in \mathcal F^{\rm trailer} \} \subset \mathcal E^{\rm c}$. \\
 
 The capacity graph  contains an edge from the supersource
@@ -1189,7 +1191,7 @@ $\mathcal G^{\rm earliest} = (\mathcal V^{\rm precedence},\mathcal E^{\rm earlie
 $\mathcal V^{\rm precedence}$
 is a set of vertices,
 $\mathcal E^{\rm earliest}$
-is a set of edges and
+is a set of edges, and
 $duration^{\rm earliest}:\mathcal E^{\rm earliest} \rightarrow \mathbb R^+_0$
 is a mapping from
 the edges  $\mathcal E^{\rm earliest}$ to their weights, which represent durations. \\
