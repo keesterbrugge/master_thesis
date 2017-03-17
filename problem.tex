@@ -208,16 +208,16 @@ Notice also that by choosing to park a trailer, two events are created. A traile
 \begin{figure}[!h]
   \centering
     \includegraphics[width=0.8\textwidth]{img/trivial_vertices_v2.pdf}
-  \caption{An illustration of the lorry's path. Every event is indicated with the event ID supplied in Table~\ref{tab:events}. The activity of the event is illustrated with a symbol. The position indicates the location of the event. The fat lines indicate where the lorry is coupled to the trailer. The thin lines indicate where the lorry is not coupled to the trailer.}
+  \caption{An illustration of the lorry's path. Every event is indicated with the event ID supplied in Table~\ref{tab:events}. The activity of the event is illustrated with a symbol. The position indicates the location of the event. The bold lines indicate where the lorry is coupled to the trailer. The thin lines indicate where the lorry is not coupled to the trailer.}
   \label{fig:vertices}
 \end{figure}
 
 
 
 If we look at Figure~\ref{fig:vertices} we can see all the events in our plan and the path of the lorry.
-From the path of the lorry we can infer the path of the trailer, namely it starts at $C$, then we follow the fat line to $ F $ and $ G$. Transshipment events come in pairs, a couple event and a decouple event. A trailer decoupled at $G$ can be coupled again at $H$.
+From the path of the lorry we can infer the path of the trailer, namely it starts at $C$, then we follow the bold line to $ F $ and $ G$. Transshipment events come in pairs, a couple event and a decouple event. A trailer decoupled at $G$ can be coupled again at $H$.
  % This is a movement through time, not space.
- From $H$ we follow the fat line back to $D$. \\
+ From $H$ we follow the bold line back to $D$. \\
 
 Notice that each event in the plan is unique, in that it occurs only once in the path of the lorry.
 % by constructing the plan in terms of events every element of the plan only occurs in the path of the lorry once.
@@ -276,7 +276,7 @@ Notice how the lorry can decrease its amount of load before unloading at the dep
     \includegraphics[width=0.8\textwidth]{img/trivial_flow_v2.pdf}
   \caption{The load division problem. Dashed arrows represent the ways that load can flow. If flow restrictions exist, they are indicated in blue.
  Arrows indicate how load can flow from event to event as cargo inside the lorry.
- Fat arrows indicate when the lorry is coupled to the trailer.}
+ Bold arrows indicate when the lorry is coupled to the trailer.}
   % The amount of customer supply is indicated with the milk icon.}
   \label{fig:flow}
 \end{figure}
@@ -295,7 +295,7 @@ Load can flow into and out of the lorry at multiple events, therefore we have to
 
 
 
-%Lets look at Figure~\ref{fig:vertices} and imagine how the supply of the customers can flow from the customers, %through the lorry and possibly through trailer, to the depot. Keep in mind that the fat line indicates where the %railer and lorry are coupled, and that the lorry can transfer load to the trailer at any event where they are %coupled. This situation is summarized in Figure~\ref{fig:flow}.
+%Lets look at Figure~\ref{fig:vertices} and imagine how the supply of the customers can flow from the customers, %through the lorry and possibly through trailer, to the depot. Keep in mind that the bold line indicates where the %railer and lorry are coupled, and that the lorry can transfer load to the trailer at any event where they are %coupled. This situation is summarized in Figure~\ref{fig:flow}.
 
 
 

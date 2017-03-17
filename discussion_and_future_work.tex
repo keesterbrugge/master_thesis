@@ -102,7 +102,7 @@ There are ways that the model can be extended:
 There are improvements that can be made to the optimization method:
 \begin{itemize}
 \item More constraints could be turned into soft constraints like the precedence of decoupling a trailer over coupling a trailer at a transshipment vertex.
-\item A solution can be decomposed into several subsolution which are independent of each other with respect to each others load and time table.
+\item A solution can be decomposed into several sub-solutions which are independent of each other with respect to each others load and time table.
 The current method recalculates the sub-solutions for each new solution even if the sub-solutions have already been seen before in other solutions.
 This can be resolved by caching the sub-solutions of solutions.
 \item New operators can be developed to speed up the search heuristic.

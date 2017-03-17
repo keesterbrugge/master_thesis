@@ -1,30 +1,75 @@
 \section{Tests and Results}
 \label{chap:Tests and Results}
 
-This section first provides details about the implementation and the used instances. Thereafter the results are described and interpreted.
+This section first provides details about the implementation and the used instances. Thereafter the results are described and interpreted.\\
 
 
 
 
-This situation has some problems. Trailers will still incur their fixed costs even though de facto no trailer is used. Furthermore, this usage of trailers reduces the amount of available trailers that can be used as actual trailers. To resolve this issue, synthetic trailers are added to the model without fixed costs, with infinite distance costs per distance unit and an infinite capacity to function as unloading docks for the lorries.
-These trailers will never be used as actual trailer due to their distance costs.
-% Therefore the costs incurred by a lorry that uses such a synthetic trailer as unloading dock are the time that it takes to couple and decouple at the depot.
-\\
+% This situation has some problems. Trailers will still incur their fixed costs even though de facto no trailer is used. Furthermore, this usage of trailers reduces the amount of available trailers that can be used as actual trailers. To resolve this issue, synthetic trailers are added to the model without fixed costs, with infinite distance costs per distance unit and an infinite capacity to function as unloading docks for the lorries.
+% These trailers will never be used as actual trailer due to their distance costs.
+% % Therefore the costs incurred by a lorry that uses such a synthetic trailer as unloading dock are the time that it takes to couple and decouple at the depot.
+% \\
 
-In the VRPTT these synthetic trailers don't have an impact on the best found solutions.
-If a lorry would couple such a synthetic trailer, it will have to be the first event on its path after starting its path.
-After coupling the trailer the lorry will either move away from the depot and incur infinite distance costs or go to the synthetic trailer's decouple vertex after which the lorry will have to end its path without having contributed at all to the collection of customer supply.
+% In the VRPTT these synthetic trailers don't have an impact on the best found solutions.
+% If a lorry would couple such a synthetic trailer, it will have to be the first event on its path after starting its path.
+% After coupling the trailer the lorry will either move away from the depot and incur infinite distance costs or go to the synthetic trailer's decouple vertex after which the lorry will have to end its path without having contributed at all to the collection of customer supply.
 
 
 \subsection{Instances}
 
 
+This subsection describes the set of VRPTT test instances  from \cite{drexl2014bandc}   structured to resemble the situation in raw milk collection.
+\\
 
-Drexl has created a set of VRPTT test instances  in \cite{drexl2014bandc}   structured to resemble the situation in raw milk collection.
-These use two lorry and two trailer classes as specified in Table \ref{tab:vehpar}.
+The customer and transshipment locations are randomly selected on a 100 by 100 kilometer grid with the depot located in the center.
+The distances between the vertices is equal to the euclidean distances increased by 30 \% and rounded up the nearest integer.
+%
+The amount of customer supplies are chosen randomly from the interval $[1000 , 10000]$ such that even the smallest vehicle can hold the whole supply of any customer.
+%
+% As load transfer time, 2 min per 1,000 units of supply are
+The instances have a planning horizon of 1320 minutes.
+The time window of each location is equal to the whole planning horizon, hence the interval [0,1320].
+These nonrestrictive time windows correspond to
+the situation in raw milk collection where  few
+customers or transshipment locations have time windows. \\
+
+%
+With these parameters, 30 instances
+were created per instance size, where the instance size varied between two and 25 customers.
+% with two, four, six and eight customers.
+%
+% denoted by x\_y\_z\_n, where $2 \leq x \leq 8$ stands for the number of
+% customers, $2 \leq y \leq 8$ for the number of transshipment locations,
+% $ z \geq 4 $ for the number of vehicles and
+% $ 0 \leq n \leq 30$ is the index of the instance type.
+%
+The amount of transshipment locations is always equal to the amount of customers.
+Half of the customers consist of trailer customers, the other half of lorry customers.
+Half of the transshipment locations consist of trailer customers, the other half of pure transshipment locations.
+%
+\\
+
+The cut-off distance $\phi $ is five kilometers.
+%
+The duration of visiting a transshipment vertex $\tau^{\rm R}$ is five minutes.
+%
+The values used for time and distance are nonnegative integers.
+In a note accompanying the instances Drexl describes that the travel time in minutes between a pair of vertices is computed by dividing the distance by the driving speed and multiplying it by 60. Only then should the value be rounded off to the nearest integer.
+\\
+% assumed.
+
+% Two sets test instances and bounds are used to benchmark this thesis' model and VNS: which can be used to compare the results of this thesis' method with are provided in   \cite{drexl2014bandc} and \cite{drexl2011branch}.
+
+
+
+The instances use two lorry and two trailer classes as specified in Table \ref{tab:vehpar}.
 Enough vehicles of each class are included such that all of the customer's supply can be collected with either only class 1 lorries and class 2 trailers, or class 2 lorries and class 1 trailers.
-The synthetic trailer class is added to instances to facilitate multiple unloads.
-They are not part of Drexl's instances.
+\\
+
+For this thesis the available fleet of each instance has been modified 
+by adding a  synthetic trailer class to facilitate multiple unloads.
+% This synthetic trailer class is thus not part of Drexl's instances.
 For each customer in an instance a synthetic trailer is added.
 \\
 
@@ -71,44 +116,6 @@ Trailer & & & & &&& &\\
 \end{table}
 
 
-The customer and transshipment locations are randomly selected on a 100 by 100 kilometer grid with the depot located in the center.
-The distances between the vertices is equal to the euclidean distances increased by 30 \% and rounded up the nearest integer.
-%
-The amount of customer supplies are chosen randomly from the interval $[1000 , 10000]$ such that even the smallest vehicle can hold the whole supply of any customer.
-%
-% As load transfer time, 2 min per 1,000 units of supply are
-The instances have a planning horizon of 1320 minutes.
-The time window of each location is equal to the whole planning horizon, hence the interval [0,1320].
-These nonrestrictive time windows correspond to
-the situation in raw milk collection where  few
-customers or transshipment locations have time windows. \\
-
-%
-With these parameters, 30 instances
-were created per instance size, where the instance size varied between two and 25 customers.
-% with two, four, six and eight customers.
-%
-% denoted by x\_y\_z\_n, where $2 \leq x \leq 8$ stands for the number of
-% customers, $2 \leq y \leq 8$ for the number of transshipment locations,
-% $ z \geq 4 $ for the number of vehicles and
-% $ 0 \leq n \leq 30$ is the index of the instance type.
-%
-The amount of transshipment locations is always equal to the amount of customers.
-Half of the customers consist of trailer customers, the other half of lorry customers.
-Half of the transshipment locations consist of trailer customers, the other half of pure transshipment locations.
-%
-\\
-
-The cut-off distance $\phi $ is five kilometers.
-%
-The duration of visiting a transshipment vertex $\tau^{\rm R}$ is five minutes.
-%
-The values used for time and distance are nonnegative integers.
-In a note accompanying the instances Drexl describes that the travel time in minutes between a pair of vertices is computed by dividing the distance by the driving speed and multiplying it by 60. Only then should the value be rounded off to the nearest integer.
-\\
-% assumed.
-
-% Two sets test instances and bounds are used to benchmark this thesis' model and VNS: which can be used to compare the results of this thesis' method with are provided in   \cite{drexl2014bandc} and \cite{drexl2011branch}.
 
 
 \subsection{Bounds}
@@ -134,13 +141,10 @@ The values of the bounds and the values found by the VNS are all included in App
 The results reported in this section were obtained by running the optimization method three times.
 % with and without constraint (\ref{con:extra}).
 The algorithm was stopped after three minutes or 3000 iterations, whichever came first.
-
 In Table \ref{tab:parameters}  the used parameters are given.
 These parameters were found to be effective without performing a hyperparameter optimization, so better parameters can probably be found.
-
-
 The maximum flow algorithm that is used to calculate the load table is the push-relabel algorithm   \cite{goldberg1988new}.
-The longest path algorithm that is used to calculate the time table is the Floyd-Warshall algorithm \cite{Floyd}
+The longest path algorithm that is used to calculate the time table is the Floyd-Warshall algorithm \cite{Floyd}.
 
 
 \begin{table}[ht]
@@ -176,7 +180,7 @@ The time related cost are included when the solutions found by the VNS for the V
 % are compared with the values found by the VNS for the VRPTT and the VRPTTMU.
 % The time related cost are excluded when the bounds on the VRPTT, VRPTT\_LB and VRPTT\_UB, are compared with the values found by the VNS for the VRPTT and the VRPTTMU.
  For each instance the available bounds and the values found by the VNS are plotted in Figure \ref{fig:single_unload}.
-Statistic of the gaps between the values found by the VNS and the available bounds are given in Table \ref{tab:gaps}
+Statistic of the gaps between the values found by the VNS and the available bounds are given in Table \ref{tab:gaps}.
 
  \begin{figure}[!h]
    % \hspace*{-1.5in}
@@ -274,14 +278,14 @@ For instances with only two customers, where the probability of the VNS finding 
 The reason for this error is unknown, but at least there is evidence that the mean of the error is zero. \\
 
 
-Surprisingly, for none of the instances did the best solution use trailer sharing.
+For none of the instances did the best solution found by the VNS use trailer sharing.
 This is the reason that in Figure \ref{fig:single_unload} none of the values found by the VNS are significantly lower than the optimal values of the TTRP.
 All negative gaps between the values found by the VNS for the VRPTT and the optimal value of the TTRP must thus be attributed to the aforementioned error and not to the benefit of being able to share trailers. \\
 
 Since the results for the VRPTT described in \cite{drexl2014bandc} exclude time related costs and the results for the TTRP described in \cite{drexl2011branch} include time related costs, no conclusions can be drawn about whether sharing trailers leads to solutions with lower costs on these instances based on these results alone.
 Only an indirect comparison of these values can be made by using the results found by the VNS.
 If sharing trailers leads  to lower cost solutions on these instances,  there may be many instances for which the gap with the upper bound of the VRPTT is significanlty greater than the gap with the optimal value of the TTRP.
-In Figure  \ref{fig:gapvsgap} the gap with respect to the optimal value of the TTRP is  plotted against the gaps with respect to the bounds of the VRPTT for each instance.
+In Figure~\ref{fig:gapvsgap} the gap with respect to the optimal value of the TTRP is  plotted against the gaps with respect to the bounds of the VRPTT for each instance.
 The figure does not support the conclusion that trailer sharing leads to significantly lower costs on these instances.
 In Table \ref{tab:gaps} we see that the mean gaps for instances with two, four, six and eight customers of the VRPTT with respect to the lower bound of the VRPTT  are 0.0, 0.1, 3.3 and 13.5 \% respectively and with respect to the upper bound 0.0, 0.1, 1.0, 0.6 \% respectively.
 Therefore, the benefit of sharing trailers can not be ruled out, but can not be shown to be definitely present either.
@@ -330,8 +334,8 @@ For each instance the VNS found a solution to the VRPTTMU. \\
   \label{fig:instance}
 \end{figure}
 
-An example of the benefits of allowing lorries to do multiple trips is given in Figure  \ref{fig:instance}. It illustrates one of the instances with two customers. The fleet consist of one of each of the vehicles described in Table \ref{tab:vehpar}. There is a lorry customer with a supply of 9333 units, a trailer customer with a supply of 6100 units and a pure transshipment location. The time window of each location is the interval [0 , 1320] minutes hence there is enough time for one lorry to visit both customers and collect their supplies.
-The sum of the customer supplies is equal to 15433 which is bigger than the capacity of either lorry.
+An example of the benefits of allowing lorries to do multiple trips is given in Figure  \ref{fig:instance}. It illustrates one of the instances with two customers. The fleet consist of one of each of the vehicles described in Table \ref{tab:vehpar}. There is a lorry customer with a supply of 9333 units, a trailer customer with a supply of 6100 units and a pure transshipment location. The time window of each location is the interval [0, 1320] minutes hence there is enough time for one lorry to visit both customers and collect their supplies.
+The sum of the customer supplies is equal to 15433 which is greater than the capacity of either lorry.
 If the lorry is allowed to do multiple trips, it can unload at the depot between visiting the customers.
 If this is not allowed, the cheapest solution is to use a trailer.
 The fixed cost of this trailer will need to be paid together with its distance related costs.

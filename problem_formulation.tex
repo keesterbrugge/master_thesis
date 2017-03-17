@@ -116,15 +116,15 @@ In this section we define extra sets and parameters to be able to construct the 
 %transshipment vertices
 Transshipments consist of two activities, namely uncoupling and coupling trailers.
 Let
-$ R^- $ and $R^+$
+$ \mathcal R^- $ and $\mathcal R^+$
 be the sets of transshipment decouple and couple vertices respectively.
 Each transshipment location
 $j \in \mathcal L^{\rm transshipment} :=
 \{ i \in \mathcal L: locationType_i \in  \{ {\rm \text{pure transshipment location}}, $ $  {\rm \text{trailer customer}} \} \} $
 has decouple vertices
-$ r^{j,-}_m \in  R^-, m \in \{ 1,\ldots,\eta \}  $
+$ r^{j,-}_m \in  \mathcal R^-, m \in \{ 1,\ldots,\eta \}  $
 and  couple vertices
-$ r^{j,+}_m \in R^+, m \in \{ 1,\ldots,\eta \}   $
+$ r^{j,+}_m \in \mathcal R^+, m \in \{ 1,\ldots,\eta \}   $
 % which together constitute transshipment pairs
 % $  (r^{j,-}_m,r^{j,+}_m) , \  m \in \{ 1,\ldots,\eta \}  $
 where $\eta$ is the maximum number of transshipments that can take place at a transshipment location.
@@ -136,44 +136,44 @@ where $\eta$ is the maximum number of transshipments that can take place at a tr
  % be the set of edges between all the decouple and couple vertex pairs of transshipment locations.
 
 %Supply Collection Vertices
-Let $S$ be the set of supply collection vertices.
+Let $\mathcal S$ be the set of supply collection vertices.
 Each customer location
 $i \in \mathcal L^{\rm customer} $
 has a supply collection vertex
-$s_{i} \in S$
+$s_{i} \in \mathcal S$
 that is used to collect the supply of the customer.
 let
-$S^{\rm trailer} := \{ s_i \in S: locationType_i = \text{trailer customer} \}$
+$\mathcal S^{\rm trailer} := \{ s_i \in \mathcal S: locationType_i = \text{trailer customer} \}$
 be the set of all supply collection vertices located at trailer customers and
-$S^{\rm lorry} := \{ s_i \in S: locationType_i = \text{lorry customer} \}$
+$\mathcal S^{\rm lorry} := \{ s_i \in \mathcal S: locationType_i = \text{lorry customer} \}$
 be the set of all supply collection vertices located at lorry customers.
 \\
 
 %Lorry Vertices}
-Let $M^{+} $ and $M^{-} $ be the set of all lorry start and end vertices respectively.
+Let $\mathcal M^{+} $ and $\mathcal M^{-} $ be the set of all lorry start and end vertices respectively.
 At the depot each lorry
 $k \in \mathcal F^{\rm lorry} $
 has a start vertex
-$m^+_k \in M^{+} $
+$m^+_k \in \mathcal M^{+} $
 that starts its path and an end vertex
-$m^-_k \in M^{-} $
+$m^-_k \in \mathcal M^{-} $
 that ends its path and unloads the lorry.\\
 
 %Trailer Vertices}
 
-Let $N^{+} $ and $N^{-} $ be the set of all trailer start and end vertices respectively.
+Let $\mathcal N^{+} $ and $\mathcal N^{-} $ be the set of all trailer start and end vertices respectively.
 At the depot each trailer
 $l \in \mathcal F^{\rm trailer} :=
 \{k \in \mathcal F: f^{\rm type}_k = \rm trailer\} $
 has a start vertex
-$n^+_l \in N^{+} $
+$n^+_l \in \mathcal N^{+} $
 that is used to couple the trailer to a lorry, and an end vertex
-$n^-_l \in N^{-} $
+$n^-_l \in \mathcal N^{-} $
 that decouples the trailer from the lorry. When the trailer is decoupled it is unloaded.\\
 
 
 For each vertex
-$v \in V := M^{+} \cup M^{-} \cup N^{+} \cup N^{-} \cup  R^- \cup R^+ \cup S $ ,
+$v \in \mathcal V := \mathcal M^{+} \cup \mathcal M^{-} \cup \mathcal N^{+} \cup \mathcal N^{-} \cup  \mathcal R^- \cup \mathcal R^+ \cup \mathcal S $ ,
 let $v^{\rm loc}$
 be the location that the vertex belongs to,
 $\tau^{\rm start}_v = \alpha_{v^{\rm loc}}$
@@ -184,9 +184,9 @@ be the closing time of the vertex's time window.
 %
 %
 % Let the latest closing time of any time window be denoted as
-% $ \tau^{\rm max} = \max_{v \in V}\tau^{\rm end}_v$
+% $ \tau^{\rm max} = \max_{v \in \mathcal V}\tau^{\rm end}_v$
 % and the earliest start time as
-% $ \tau^{\rm min} = \min_{v \in V}\tau^{\rm start}_v$
+% $ \tau^{\rm min} = \min_{v \in \mathcal V}\tau^{\rm start}_v$
 % . \\
 
 
@@ -194,14 +194,14 @@ Let the duration of a vertex visit be denoted as
 \begin{align}
   \tau^{\rm visit}_{v,k} =
   \begin{cases}
-    % 0      , & \text{ for }   v \in S             \\
-    0      , & \text{ if }   v \in M^- \cup M^+,  \\
-    \tau^D , & \text{ if }   v \in N^- \cup N^+,  \\
-    \tau^R , & \text{ if }   v \in R^- \cup R^+, \\
+    % 0      , & \text{ for }   v \in \mathcal S             \\
+    0      , & \text{ if }   v \in \mathcal M^- \cup \mathcal M^+,  \\
+    \tau^D , & \text{ if }   v \in \mathcal N^- \cup \mathcal N^+,  \\
+    \tau^R , & \text{ if }   v \in \mathcal R^- \cup \mathcal R^+, \\
     f_k^{\rm loadspeed} \cdot locationSupply_{v^{\rm loc}},
-     & \text{ if }   v \in S ,
+     & \text{ if }   v \in \mathcal S ,
   \end{cases}
-  \quad v \in V,
+  \quad v \in \mathcal V,
   \ k \in \mathcal F^{\rm lorry}.
 \end{align}
 
@@ -212,7 +212,7 @@ be the distance between two vertices $u$ and $v$. \\
 % $ \varepsilon^\phi_i $. \\
 
 
-Let the travel time between vertices $u,v \in V$ by vehicle $k \in \mathcal F$  be denoted as
+Let the travel time between vertices $u,v \in \mathcal V$ by vehicle $k \in \mathcal F$  be denoted as
 \begin{align}
   \tau^{\rm travel}_{u,v,k} =
   \begin{cases}
@@ -221,7 +221,7 @@ Let the travel time between vertices $u,v \in V$ by vehicle $k \in \mathcal F$  
     \delta_{u,v} / f_l^{\rm speed} ,
     & \text{  otherwise},
   \end{cases}
-  \quad u,v \in V,
+  \quad u,v \in \mathcal V,
   \ k \in \mathcal F.
 \end{align}
 
@@ -257,23 +257,23 @@ A transport plan consist of paths, the assignment of vehicles to those paths, th
 Solving the VRPTT yields such a transport plan.\\
 
 The VRPTT is described with a mixed-integer linear problem over the directed graph
-$G=(V,E)$,
-where $E$ is the set of all  
+$\mathcal G=(\mathcal V,\mathcal E)$,
+where $\mathcal E$ is the set of all  
 % the set of edges consist of the  of all possible 
 edges between the vertices
-$ E = \{ (u,v): u,v \in V , u \neq v \} $. \\
+$ \mathcal E = \{ (u,v): u,v \in \mathcal V , u \neq v \} $. \\
 
 %%%%%%%%%%% path and x     %%%%%%%%%%%5
 From now on the path
 % $PATH(k)$
 of lorry
 $k \in \mathcal F^{\rm lorry}$
-means a simple path in $G$ from the lorry's start vertex $m^+_k$ to its end $m^-_k$. \\
+means a simple path in $\mathcal G$ from the lorry's start vertex $m^+_k$ to its end $m^-_k$. \\
 
 We model a lorry's path using the binary variable
 \begin{align}
   x^{k}_{u,v} =  \begin{cases}
-  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in  E$}, \\
+  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in \mathcal E$}, \\
   0,              & \text{otherwise. }
   \end{cases}
 \end{align}
@@ -285,7 +285,7 @@ We model the movements of trailers by using the binary variable
 $y^{k,l}_{u,v} $, where
 \begin{align}
   y^{k,l}_{u,v} =  \begin{cases}
-  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ is coupled to trailer $l \in \mathcal F^{\rm trailer} $ whilst traversing edge $(u,v) \in E$ }, \\
+  1 ,& \text{if lorry $k \in \mathcal F^{\rm lorry}$ is coupled to trailer $l \in \mathcal F^{\rm trailer} $ whilst traversing edge $(u,v) \in \mathcal E$ }, \\
   0,              & \text{otherwise. }
   \end{cases}
 \end{align}
@@ -300,7 +300,7 @@ We model the time table with the variable $t^k_{u,v}$, where
 \begin{align}
   t^k_{u,v} =
   \begin{cases}
-    a ,       & \text{if a lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in E$ and arrives at $j$ at time $a \in \mathbb{R}^0_+$}, \\
+    a ,       & \text{if a lorry $k \in \mathcal F^{\rm lorry}$ traverses edge $(u,v) \in \mathcal E$ and arrives at $j$ at time $a \in \mathbb{R}^0_+$}, \\
     0,        & \text{otherwise. }
   \end{cases}
 \end{align}
@@ -313,7 +313,7 @@ We model the load table with the variable $z^k_{u,v}$, where
 \begin{align}
   z^k_{u,v} =
   \begin{cases}
-    a ,       & \text{if a vehicle $k \in \mathcal F$ traverses edge $(u,v) \in  E $ with load $a \in \mathbb{R}^0_+ $}, \\
+    a ,       & \text{if a vehicle $k \in \mathcal F$ traverses edge $(u,v) \in  \mathcal E $ with load $a \in \mathbb{R}^0_+ $}, \\
     0,        & \text{otherwise. }
   \end{cases}
 \end{align}
@@ -360,9 +360,9 @@ $(X,Y)$.\\
 A vertex can be on one path at the most,
 \begin{align}
 \label{con:first}
- \sum_{v \in V}
+ \sum_{v \in \mathcal V}
  \sum_{k \in \mathcal F^{\rm lorry}}
- x^k_{u,v} \leq 1, \quad  u \in  V  .
+ x^k_{u,v} \leq 1, \quad  u \in  \mathcal V  .
 \end{align}
 
 %%%%%% on flow. Either in and out. only begin and end of lorry -1,+1%%%%%%%%%%%%
@@ -376,19 +376,19 @@ Hence,
     1, & \ \text{ if } v = m^-_k, \\
     0,  & \text{otherwise,}
   \end{cases} \\
-  \quad v \in  V , \ k \in \mathcal F^{\rm lorry}. \notag
+  \quad v \in  \mathcal V , \ k \in \mathcal F^{\rm lorry}. \notag
 \end{align}
 
 %%%%%% each supply collection v visited %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Every supply collection vertex
-% $i \in S$
+% $i \in \mathcal S$
 is visited by a lorry,
 \begin{align}
   \label{con:customer_served}
-   \sum_{u \in V}
-   \sum_{v \in S}
+   \sum_{u \in \mathcal V}
+   \sum_{v \in \mathcal S}
    \sum_{k \in \mathcal F^{\rm lorry}}
-x^k_{u,v} \geq |S| .
+x^k_{u,v} \geq |\mathcal S| .
 \end{align}
 \\
 
@@ -398,7 +398,7 @@ x^k_{u,v} \geq |S| .
 A trailer can only traverse an edge that is traversed by a lorry.
 A lorry can pull at most one trailer at a time,
 \begin{align}
-  \sum_{l \in \mathcal F^{\rm trailer}} y^{k,l}_{u,v} - x_{u,v}^k \leq 0, \quad u,v \in V, k \in \mathcal{F}^{\rm lorry}.
+  \sum_{l \in \mathcal F^{\rm trailer}} y^{k,l}_{u,v} - x_{u,v}^k \leq 0, \quad u,v \in \mathcal V, k \in \mathcal{F}^{\rm lorry}.
 \end{align}
 
 % The only vertices a lorry can depart from whilst coupled to a trailer are the trailer coupling vertices and the supply collection vertices of trailer customers.
@@ -417,8 +417,8 @@ A lorry can pull at most one trailer at a time,
 No lorry customers can be visited with a trailer,
 \begin{align}
   \label{eq:lorrycustomer}
-  \sum_{u \in V }
-  \sum_{v \in S^{\rm lorry} }
+  \sum_{u \in \mathcal V}
+  \sum_{v \in \mathcal S^{\rm lorry} }
   \sum_{k \in \mathcal F^{\rm lorry} }
   \sum_{l \in \mathcal F^{\rm trailer} }
    y^{k,l}_{u,v}  \leq 0 .
@@ -427,8 +427,8 @@ No lorry customers can be visited with a trailer,
 
 A lorry can not arrive at a couple vertex whilst coupled to a trailer,
 \begin{align}
-  \sum_{u \in V }
-  \sum_{v \in N^+ \cup R^+ }
+  \sum_{u \in \mathcal V}
+  \sum_{v \in \mathcal N^+ \cup \mathcal R^+ }
   \sum_{k \in \mathcal F^{\rm lorry} }
   \sum_{l \in \mathcal F^{\rm trailer} }
    y^{k,l}_{u,v}  \leq 0 .
@@ -436,8 +436,8 @@ A lorry can not arrive at a couple vertex whilst coupled to a trailer,
 
 A lorry can not leave  a decouple vertex without being coupled to a trailer,
 \begin{align}
-  \sum_{u \in N^- \cup R^- }
-  \sum_{v \in V }
+  \sum_{u \in \mathcal N^- \cup \mathcal R^- }
+  \sum_{v \in \mathcal V}
   \sum_{k \in \mathcal F^{\rm lorry} }
   \sum_{l \in \mathcal F^{\rm trailer} }
    y^{k,l}_{u,v}  \leq 0 .
@@ -450,9 +450,9 @@ The vertices a lorry can only arrive at whilst coupled to a trailer are the trai
    \sum_{l \in \mathcal F^{\rm trailer}}
    y^{k,l}_{u,v}  - x^k_{u,v} = 0 ,  \\
    (u,v) \in \
-    &  \{ (u',v'): u' \in  \{  N^+ \cup R^+  \}   , v' \in V   \}
+    &  \{ (u',v'): u' \in  \{  \mathcal N^+ \cup  \mathcal R^+  \}   , v' \in \mathcal V   \}
    \cup \notag \\
-    & \{  (u',v'): u' \in V,  v' \in \{ N^- \cup R^-  \} \}, \notag\\
+    & \{  (u',v'): u' \in \mathcal V,  v' \in \{ \mathcal N^- \cup \mathcal R^-  \} \}, \notag\\
      k  \in \ &   \mathcal F^{\rm lorry}. \notag
 \end{align}
 
@@ -462,9 +462,9 @@ The vertices a lorry can only arrive at whilst coupled to a trailer are the trai
 
 A lorry departs from a trailer customer's supply collection vertex with a trailer if and only if it also arrived with that trailer,
 \begin{align}
-   \sum_{u \in V}
+   \sum_{u \in \mathcal V}
    \left(  y^{k,l}_{u,v} - y^{k,l}_{v,u}  \right) =
-   0,  \quad  v \in  S^{\rm trailer},
+   0,  \quad  v \in  \mathcal S^{\rm trailer},
    \ k \in \mathcal F^{\rm lorry},
    \ l \in \mathcal F^{\rm trailer} .
 \end{align}
@@ -474,8 +474,8 @@ A lorry departs from a trailer customer's supply collection vertex with a traile
 Each trailer can only be coupled and decoupled at the depot at the start and end vertex designated to the trailer,
 \begin{align}
      y^{k,l}_{u,w}  = y^{k,l}_{w,v}  =   0, \quad
-     u \in N^+ \setminus \{ n^+_l \}, \ v \in N^- \setminus \{ n^-_l \} , \\
-     w \in V,
+     u \in \mathcal N^+ \setminus \{ n^+_l \}, \ v \in \mathcal N^- \setminus \{ n^-_l \} , \\
+     w \in \mathcal V,
      k \in \mathcal F^{\rm lorry},
      l \in \mathcal F^{\rm trailer}. \notag
 \end{align}
@@ -485,7 +485,7 @@ Each trailer can only be coupled and decoupled at the depot at the start and end
 Each transshipment couple vertex is paired with a decouple vertex.
 A trailer departs from a transshipment location's couple vertex if and only if it also arrives at the decouple vertex that is paired with the couple vertex,
 \begin{align}
-     \sum_{w \in V}  \sum_{k \in \mathcal F^{\rm lorry} }
+     \sum_{w \in \mathcal V}  \sum_{k \in \mathcal F^{\rm lorry} }
      \left( y^{k,l}_{w,u}  - y^{k,l}_{v,w} \right) = 0 , \quad
      l \in \  \mathcal F^{\rm trailer},
       (u,v) \in \ \mathcal E^{\rm pairs}
@@ -501,7 +501,7 @@ A trailer departs from a transshipment location's couple vertex if and only if i
  A lorry with three axles can not be coupled to a trailer with three axles,
  \begin{align}
    \label{eq:vehicle-compatibility}
-   y^{k,l}_{u,v} = \ & 0, \quad u,v \in V ,\\
+   y^{k,l}_{u,v} = \ & 0, \quad u,v \in \mathcal V ,\\
    k \in \ & \{ k' \in \mathcal{F}^{\rm lorry} : f^{\rm axle-type}_{k'} = {\rm 3-axles} \} , \notag \\
   \ l \in \  & \{ l' \in \mathcal{F}^{\rm trailer} : f^{\rm axle-type}_{l'} = {\rm 3-axles} \} \notag  .
  \end{align}
@@ -520,7 +520,7 @@ The load of a lorry on an edge can not exceed the lorry's capacity.
 If a lorry does not traverse an edge, the load of the lorry on that edge is zero,
 \begin{align}
   z_{u,v}^k  - x^{k}_{u,v}  f_k^{\rm capacity}  \leq 0, \quad
-  u,v \in V,
+  u,v \in \mathcal V,
   \ k \in \mathcal F^{\rm lorry}.
 \end{align}
 
@@ -529,7 +529,7 @@ If a lorry does not traverse an edge, the load of the lorry on that edge is zero
 The load of a trailer on an edge can not exceed the trailer's capacity. If a trailer does not traverse an edge, the load of that trailer on that edge is zero.
 \begin{align}
   z_{u,v}^l  - f_l^{\rm capacity}  \sum_{ k \in \mathcal F^{\rm lorry} } y^{k,l}_{u,v}   \leq 0, \quad
-  u,v \in V,
+  u,v \in \mathcal V,
   \ l \in \mathcal F^{\rm trailer}.
 \end{align}
 
@@ -541,7 +541,7 @@ whilst visiting a customer's supply collection vertex, the sum of the load of th
 \begin{align}
   \label{eq:supply}
   % locationSupply_m +
-  \sum_{v \in V}
+  \sum_{v \in \mathcal V}
   \sum_{ k \in \mathcal F }
   \left(
     z^k_{s_j,v}
@@ -559,15 +559,15 @@ whilst visiting a customer's supply collection vertex, the sum of the load of th
 
 On vertices other than the supply collection vertices, the load of a lorry can stay the same, or decrease in case some of the load is transfered to a trailer,
 \begin{align}
-  \sum_{u \in V} \left( z^k_{u,v} - z^k_{v,u} \right)  \leq 0, \quad
-  v \in V \setminus S,
+  \sum_{u \in \mathcal V} \left( z^k_{u,v} - z^k_{v,u} \right)  \leq 0, \quad
+  v \in \mathcal V \setminus \mathcal S,
   \ k \in \mathcal F^{\rm lorry}.
 \end{align}
 
 
 On a supply collection vertex, the load of a lorry can not increase more than the supply of the customer,
 \begin{align}
-  \sum_{v \in V} \left( z^k_{v,s_j} - z^k_{s_j,v} \right)  \leq locationSupply_j, \quad
+  \sum_{v \in \mathcal V} \left( z^k_{v,s_j} - z^k_{s_j,v} \right)  \leq locationSupply_j, \quad
   j \in \mathcal L^{\rm customer},
   \ k \in \mathcal F^{\rm lorry}.
 \end{align}
@@ -575,7 +575,7 @@ On a supply collection vertex, the load of a lorry can not increase more than th
 Each decouple and couple transshipment vertex pair has, if used, two lorry loads and a trailer load incoming and outgoing.
 The sum of the incoming loads of such a vertex pair is equal to the sum of the  outgoing loads,
 \begin{align}
-  \sum_{w \in V}
+  \sum_{w \in \mathcal V}
   \sum_{k \in \mathcal F}
   \left(
   z^k_{w,u} -  z^k_{u,w}  + z^k_{w,v} - z^k_{v,w}
@@ -592,9 +592,9 @@ The sum of the incoming loads of such a vertex pair is equal to the sum of the  
 
 The load of a lorry upon arrival at a trailer start vertex is equal to the load of the trailer and the lorry upon departure,
 \begin{align}
-  \sum_{u \in V} \sum_{k \in \mathcal F}
+  \sum_{u \in \mathcal V} \sum_{k \in \mathcal F}
   \left( z^k_{u,v} - z^k_{v,u} \right) = 0, \quad
-  v \in N^+.
+  v \in \mathcal N^+.
 \end{align}
 
 
@@ -604,7 +604,7 @@ The load of a lorry upon arrival at a trailer start vertex is equal to the load 
 
 A trailer can not be decoupled at the trailer's end vertex whilst being loaded more than its capacity,
 \begin{align}
-  \sum_{u \in V}
+  \sum_{u \in \mathcal V}
   \sum_{k \in \mathcal F}
   \left(
   z^k_{u,v} - z^k_{v,u}
@@ -625,7 +625,7 @@ A trailer can not be decoupled at the trailer's end vertex whilst being loaded m
 % Below is a suggestion on optional way to express (26). Unless lorry $k$ visits vertex $i$, the constraint just says $0 \leq 0$. If lorry $k$ visits vertex $i$, the left-hand side is the least time needed for lorry $k$ between entering vertex $i$ and entering the subsequent vertex, whichever the subsequent vertex is. Similarly, the right-hand side is the actual time between lorry $k$'s entry to vertex $i$ and the subsequent vertex. The constraint is then
 %
 % \begin{align}
-%   \sum_{v} x_{i,v}^k (\tau_{i,k}^{\rm visit} + \tau_{i,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{i,v}^k - t_{v,i}^k),
+%   \sum_{v} x_{i,v}^k (\tau_{i,k}^{\rm visit} + \tau_{i,v,k}^{\rm travel}) \leq \sum_{v \in \mathcal V} (t_{i,v}^k - t_{v,i}^k),
 %   \qquad i\in V, k \in \mathcal{F}^{\rm lorry}.
 % \end{align}
 
@@ -662,7 +662,7 @@ Hence, given the path assignment $(X,Y)$ and time table $T$ the start time of th
 \begin{align}
   visitationStart(u,X,Y,T) =
   % arrival time at vertex that is visited after u if lorry was alone
-  \sum_{v \in V}
+  \sum_{v \in \mathcal V}
   \left(
   \sum_{k \in \mathcal F^{\rm lorry}}
   \left(
@@ -690,18 +690,18 @@ A vertex must be visited early enough such that the visit, which may include loa
 % \end{align}
 \begin{align}
   \label{eq:time-window}
-    \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}}
+    \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}}
     \left( t^k_{u,v}  -
      x^{k}_{u,v} \left(
     \tau^{\rm end}_v - \tau^{\rm visit}_{v,k}
     \right)  \right) \leq 0,
     \quad
-    u \in  V .
+    u \in  \mathcal V .
   \end{align}
 
 The time that a lorry needs between two consecutive vertex arrivals is possibly some waiting time before the visit starts, the duration of the first vertex visit plus the lorry's travel time between the two vertices,
 % \begin{align}
-%   \sum_{v \in V} t^k_{v,i} - t^k_{i,j} +
+%   \sum_{v \in \mathcal V} t^k_{v,i} - t^k_{i,j} +
 %   (x^{k}_{i,j} - 1  ) \tau^{\rm max}   \leq
 %   -x^{k}_{i,j} \left(
 %   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,k}
@@ -710,8 +710,8 @@ The time that a lorry needs between two consecutive vertex arrivals is possibly 
 % \end{align}
 \begin{align}
   \label{eq:time-hard-first}
-  \sum_{v\in V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{u,v}^k - t_{v,u}^k),
-  \qquad u\in V \setminus M^-, k \in \mathcal{F}^{\rm lorry}.
+  \sum_{v\in \mathcal V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in \mathcal V} (t_{u,v}^k - t_{v,u}^k),
+  \qquad u\in \mathcal V \setminus \mathcal M^-, k \in \mathcal{F}^{\rm lorry}.
 \end{align}
 
 
@@ -719,7 +719,7 @@ The time that a lorry needs between two consecutive vertex arrivals is possibly 
 
 If a lorry is pulling a trailer whilst traversing an edge its maximum speed could be lowered, hence the following constraints also need to be satisfied,
 % \begin{align}
-%   \sum_{v \in V} t^k_{v,i} - t^k_{i,j} +
+%   \sum_{v \in \mathcal V} t^k_{v,i} - t^k_{i,j} +
 %   (y^{k,l}_{i,j} - 1  ) \tau^{\rm max}   \leq
 %   -y^{k,l}_{i,j} \left(
 %   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,l}
@@ -728,8 +728,8 @@ If a lorry is pulling a trailer whilst traversing an edge its maximum speed coul
 %   \ l \in \mathcal F^{\rm trailer}.
 % \end{align}
 \begin{align}
-  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - t_{v,u}^k),
-  \qquad u\in V \setminus M^-, l \in \mathcal{F}^{\rm trailer}.
+  \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - t_{v,u}^k),
+  \qquad u\in \mathcal V \setminus \mathcal M^-, l \in \mathcal{F}^{\rm trailer}.
 \end{align}
 
 % function for big M, basically isVisited, returns bool
@@ -740,7 +740,7 @@ If a lorry is pulling a trailer whilst traversing an edge its maximum speed coul
 Only after a lorry has started and finished decoupling a trailer at a transshipment vertex can a start be made with coupling the trailer again,  
 % \begin{align}
 %   visitationStart(r^{-,j}_m, X,Y, T) +
-%   \left(  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{r^{-,j}_m,v} -1 \right)
+%   \left(  \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{r^{-,j}_m,v} -1 \right)
 %   \tau^R
 %   \leq
 %   visitationStart(r^{+,j}_m, X,Y, T) , \\
@@ -751,8 +751,8 @@ Only after a lorry has started and finished decoupling a trailer at a transshipm
 \begin{align}
   visitationStart(u, X,Y, T) +
 %   \tau^{\rm R}   \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,v}   
-  \tau^{\rm R}   \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{w,u}   
-%   \left(  \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w} -1 \right)
+  \tau^{\rm R}   \sum_{w \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{w,u}   
+%   \left(  \sum_{w \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w} -1 \right)
 %   \tau^R
   \leq
   visitationStart(v, X,Y, T) ,
@@ -761,19 +761,19 @@ Only after a lorry has started and finished decoupling a trailer at a transshipm
 
 
 % $$ 
-% visitationStart(u,X,Y,T) - visitationStart(v,X,Y,T) \leq \tau^{\rm R} \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}, 
+% visitationStart(u,X,Y,T) - visitationStart(v,X,Y,T) \leq \tau^{\rm R} \sum_{w \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}, 
 % \quad (u,v) \in \mathcal{E}^{\rm pairs}
 % $$
 
 % $$ 
-% visitationStart(v,X,Y,T) - visitationStart(u,X,Y,T) \geq + \tau^{\rm R} \sum_{w \in V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}   , 
+% visitationStart(v,X,Y,T) - visitationStart(u,X,Y,T) \geq + \tau^{\rm R} \sum_{w \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} x^k_{u,w}   , 
 % \quad (u,v) \in \mathcal{E}^{\rm pairs}
 % $$
 
 
 The time a lorry needs  between the start of the time window of the vertex it is currently at and arriving at the next vertex is at least the time needed for the current vertex's visit plus the lorry's travel time between the two vertices,
 % \begin{align}
-%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
+%   \sum_{v \in \mathcal V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
 %   (x^{k}_{i,j} - 1  ) \tau^{\rm max}   \leq
 %   -x^{k}_{i,j} \left(
 %   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,k}
@@ -781,8 +781,8 @@ The time a lorry needs  between the start of the time window of the vertex it is
 %   \ k \in \mathcal F^{\rm lorry}.
 % \end{align}
 \begin{align}
-  \sum_{v \in V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in V} (t_{i,v}^k - x^k_{v,u} \tau_u^{\rm start}),
-  \qquad u\in V \setminus M^- , k \in \mathcal{F}^{\rm lorry}.
+  \sum_{v \in \mathcal V} x_{u,v}^k (\tau_{u,k}^{\rm visit} + \tau_{u,v,k}^{\rm travel}) \leq \sum_{v \in \mathcal V} (t_{i,v}^k - x^k_{v,u} \tau_u^{\rm start}),
+  \qquad u\in \mathcal V \setminus \mathcal M^- , k \in \mathcal{F}^{\rm lorry}.
 \end{align}
 
 
@@ -790,7 +790,7 @@ The time a lorry needs  between the start of the time window of the vertex it is
 
 If a lorry is pulling a trailer, its maximum speed could be lowered, hence the following constraints also need to be satisfied,
 % \begin{align}
-%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
+%   \sum_{v \in \mathcal V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} +
 %   (y^{k,l}_{i,j} - 1  ) \tau^{\rm max}   \leq
 %   -y^{k,l}_{i,j} \left(
 %   \tau^{\rm visit}_{i,k} + \tau^{\rm travel}_{i,j,l}
@@ -800,8 +800,8 @@ If a lorry is pulling a trailer, its maximum speed could be lowered, hence the f
 % \end{align}
 \begin{align}
   \label{eq:time-hard-last}
-  \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - x^k_{v,u} \tau_u^{\rm start}),
-  \qquad u\in V \setminus M^- , l \in \mathcal F^{\rm trailer}.
+  \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{u,v} (\tau_{u,k}^{\rm visit} + \tau_{u,v,l}^{\rm travel}) \leq \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{u,v}^k - x^k_{v,u} \tau_u^{\rm start}),
+  \qquad u\in \mathcal V \setminus \mathcal M^- , l \in \mathcal F^{\rm trailer}.
 \end{align}
 
 
@@ -809,7 +809,7 @@ If a lorry is pulling a trailer, its maximum speed could be lowered, hence the f
 % experiment to replace previous 2 equations
 % \begin{align}
 %   \label{eq:time-hard-last}
-%   \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{i,j} (\tau_{i,k}^{\rm visit} + \tau_{i,v,l}^{\rm travel}) \leq \sum_{v \in V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{i,v}^k - x^k_{v,i} \tau_i^{\rm start}),
+%   \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} y^{k,l}_{i,j} (\tau_{i,k}^{\rm visit} + \tau_{i,v,l}^{\rm travel}) \leq \sum_{v \in \mathcal V} \sum_{k \in \mathcal F^{\rm lorry}} (t_{i,v}^k - x^k_{v,i} \tau_i^{\rm start}),
 %   \qquad i\in V \setminus M^- , l \in \mathcal F^{\rm trailer}.
 % \end{align}
 
@@ -851,7 +851,7 @@ Further removing these  sources of symmetry is outside the scope of this thesis 
 %
 % the same can be done for trailer of the same type.
 % \begin{align}
-%   \sum_{i \in V}
+%   \sum_{i \in \mathcal V}
 %   \sum_{k \in \mathcal{F}^{\rm lorry} }
 %   \left( x^{k}_{i,j} - x^{k}_{i,m} \right) \geq 0, \\
 %   \quad (j,m) \in \{ (n^{u,-}_v,r^{u,-}_{v+1})  : \ u \in \mathcal L^{\rm transshipment},
@@ -859,7 +859,7 @@ Further removing these  sources of symmetry is outside the scope of this thesis 
 % \end{align}
 %
 % \begin{align}
-%   \sum_{v \in V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} + (y^{k,l}_{i,j} - 1  ) \tau^{\rm max} \leq \begin{cases}
+%   \sum_{v \in \mathcal V} x^k_{v,i} \tau_i^{\rm start} - t^k_{i,j} + (y^{k,l}_{i,j} - 1  ) \tau^{\rm max} \leq \begin{cases}
 %
 %  \end{cases} \\
 %  \quad \ i,j \in  V ,
@@ -918,8 +918,8 @@ The VRPTTMU is turned into the VRPTT by adding the following constraint,
 \begin{align}
   \label{con:extra}
   x^{k}_{u,v} = \ &  0, \\
-  \quad (u,v) \in \  & \{  (u',v') : u' \in V \setminus  M^+  , \ v' \in N^+  \} \cup \notag \\
-   & \{  (u',v') : u' \in N^- , \ v'  \in V \setminus   M^-   \} ,\notag \\
+  \quad (u,v) \in \  & \{  (u',v') : u' \in \mathcal V \setminus  \mathcal M^+  , \ v' \in \mathcal N^+  \} \cup \notag \\
+   & \{  (u',v') : u' \in \mathcal N^- , \ v'  \in \mathcal V \setminus  \mathcal  M^-   \} ,\notag \\
   \ k \in \ & \mathcal{F}^{\rm lorry} . \notag
 \end{align}
 The constraint ensures that a lorry can couple (decouple) a trailer at the depot if and only if it is the first (last) thing it does on its path, which makes multiple unloads impossible. \\
@@ -975,7 +975,7 @@ The binary decision variables are constrained as follows,
 
 \begin{align}
 x^k_{u,v}, y^{k,l}_{u,v} \in \{ 0,1 \} ,
-\quad u,v \in V,
+\quad u,v \in \mathcal V,
 \ k \in \mathcal{F}^{\rm lorry},
 \ l \in \mathcal{F}^{\rm trailer}.
 \end{align}
@@ -984,7 +984,7 @@ The real-valued nonnegative decision variables are constrained as follows,
 \begin{align}
 \label{con:last}
 t^k_{u,v}, z^{l}_{u,v} \in \mathbb{R}^0_+,
-\quad u,v \in V,
+\quad u,v \in \mathcal V,
 \ k \in \mathcal{F}^{\rm lorry},
 \ l \in \mathcal{F}.
 \end{align}
@@ -1000,7 +1000,7 @@ all of which will be defined. The objective function is subject to constraints (
 The distance costs function $C^{\rm distance}$ is the sum of the distance costs of all traversed edges by all vehicles,
 \begin{align}
    C^{\rm distance}(X,Y) =
-   \sum_{u,v \in V}
+   \sum_{u,v \in \mathcal V}
    \sum_{k \in F^{\rm lorry}}
    \delta_{u,v}
    \left(
@@ -1014,7 +1014,7 @@ The distance costs function $C^{\rm distance}$ is the sum of the distance costs 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % If a lorry $k \in \mathcal F^{\rm lorry} $ departs from $i \in V$  without trailer, the departure time of the lorry is given by the following equation
 % \begin{align}
-% \sum_{j \in V }
+% \sum_{j \in \mathcal V}
 % \left(
 % t^k_{i,j} - x^k_{i,j}
 % \tau^{\rm travel}_{i,j,k}
@@ -1027,13 +1027,13 @@ The distance costs function $C^{\rm distance}$ is the sum of the distance costs 
 % % choose not to change though
 % \begin{align}
 % t^{\rm path-duration}_k = \begin{cases}
-% \sum_{j \in V }
+% \sum_{j \in \mathcal V}
 % \left(
 % t^k_{j,m^-_k} - t^k_{m^+_k,j} + x^k_{m^+_k,j}
 % \tau^{\rm travel}_{m^+_k,j,k}
 % \right),
 %  &\text{ if } \quad  k \in \mathcal F^{\rm lorry}, \\
-% \sum_{j \in V } \sum_{l \in \mathcal F^{\rm lorry} }
+% \sum_{j \in \mathcal V} \sum_{l \in \mathcal F^{\rm lorry} }
 % \left(
 % t^l_{j,n^-_k} - t^l_{j,n^+_k}
 % \right),
@@ -1082,7 +1082,7 @@ The fixed costs function $C^{\rm fixed}$ is the the sum of the fixed costs of al
    (1 - x^k_{m^+_k,m^-_k }) \cdot f^{\rm fixed}_k
    +
   %  \sum_{j \in R^- \cup S }
-  \sum_{v \in V  }
+  \sum_{v \in \mathcal V  }
   %  \sum_{v \in V \setminus N^-  }
    \sum_{l \in \mathcal F^{\rm trailer}}
    x^k_{v,n^+_l} \cdot f^{\rm fixed}_l
@@ -1130,12 +1130,12 @@ A trailer is considered as being used when it has been coupled.
 
 % if you change definition of trailer being used also too has left the depot, you arrive at the cost function if you wnat to use trailer as extra unloading places for lorries. --> this is achieved by replacing the snippet
 % \sum_{k \in \mathcal F^{\rm lorry}}
-% \sum_{i \in V}
+% \sum_{i \in \mathcal V}
 % \sum_{l \in \mathcal F^{\rm trailer}}
 % x^k_{i,n^+_l} \cdot f^{\rm fixed}_l
 % WITH
 % \sum_{k \in \mathcal F^{\rm lorry}}
-% \sum_{i \in V \setminus N^-  OR instead I could use \in S \cup R^-}
+% \sum_{i \in V \setminus N^-  OR instead I could use \in \mathcal S \cup R^-}
 % \sum_{l \in \mathcal F^{\rm trailer}}
 % x^k_{n^+_l,i} \cdot f^{\rm fixed}_l
 
